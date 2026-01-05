@@ -31,8 +31,8 @@ interface ControlPanelProps {
   onToggleSync: (active: boolean) => void;
   playbackState: 'IDLE' | 'BUFFERING' | 'PLAYING' | 'PAUSED';
   onTogglePlay: () => void;
-  isMuted: boolean;
-  onToggleMute: () => void;
+  audioSource: number | null; // null = all muted
+  onAudioSourceChange: (index: number | null) => void;
   // YouTube Zoom
   zoomLevel: number;
   onZoomChange: (zoom: number) => void;
@@ -60,8 +60,8 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   onToggleSync,
   playbackState,
   onTogglePlay,
-  isMuted,
-  onToggleMute,
+  audioSource,
+  onAudioSourceChange,
   zoomLevel,
   onZoomChange,
   gridConfig,
@@ -145,111 +145,9 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
 
       <Accordion
         type="multiple"
-        defaultValue={['playback', 'presets']}
+        defaultValue={['source', 'playback']}
         className="w-full"
       >
-        {/* PRESETS MANAGER */}
-        <AccordionItem value="presets">
-          <AccordionTrigger>SAVED CONFIGURATIONS</AccordionTrigger>
-          <AccordionContent>
-            <div className="flex flex-col gap-3">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Config Name (e.g. Morning News)"
-                  id="preset-name-input"
-                  className="flex-1 bg-[#333] border border-[#444] text-white p-2 rounded text-xs"
-                />
-                <button
-                  onClick={() => {
-                    const nameInput = document.getElementById(
-                      'preset-name-input'
-                    ) as HTMLInputElement;
-                    if (nameInput.value) {
-                      handleSavePreset(nameInput.value);
-                      nameInput.value = '';
-                    }
-                  }}
-                  className="bg-accent-blue text-white border-none px-3 rounded cursor-pointer font-bold text-xs hover:bg-blue-600"
-                >
-                  SAVE
-                </button>
-              </div>
-
-              <div className="flex flex-col gap-1 max-h-32 overflow-y-auto">
-                {Object.keys(savedPresets).length === 0 && (
-                  <span className="text-xs text-text-dim italic">
-                    No saved presets
-                  </span>
-                )}
-                {Object.entries(savedPresets).map(([name]) => (
-                  <div
-                    key={name}
-                    className="flex justify-between items-center bg-gray-800 p-2 rounded hover:bg-gray-700 group"
-                  >
-                    <span className="text-xs text-white truncate max-w-[150px]">
-                      {name}
-                    </span>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleLoadPreset(name)}
-                        className="text-xs text-accent-green hover:underline"
-                      >
-                        LOAD
-                      </button>
-                      <button
-                        onClick={() => handleDeletePreset(name)}
-                        className="text-xs text-red-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-
-        {/* PLAYBACK */}
-        <AccordionItem value="playback">
-          <AccordionTrigger>PLAYBACK CONTROL</AccordionTrigger>
-          <AccordionContent>
-            <div className="flex flex-col gap-3">
-              <button
-                onClick={onTogglePlay}
-                disabled={playbackState === 'BUFFERING'}
-                className={`w-full py-3 border-none rounded-md font-bold cursor-pointer text-white transition-colors text-base ${
-                  playbackState === 'PLAYING'
-                    ? 'bg-accent-red hover:bg-red-700'
-                    : 'bg-accent-green hover:bg-green-700'
-                } ${
-                  playbackState === 'BUFFERING'
-                    ? 'opacity-50 cursor-not-allowed'
-                    : ''
-                }`}
-              >
-                {playbackState === 'PLAYING'
-                  ? 'PAUSE'
-                  : playbackState === 'BUFFERING'
-                  ? 'BUFFERING...'
-                  : 'PLAY'}
-              </button>
-
-              <button
-                onClick={onToggleMute}
-                className={`w-full py-3 border-none rounded-md font-bold cursor-pointer text-white transition-colors text-base ${
-                  isMuted
-                    ? 'bg-gray-600 hover:bg-gray-700'
-                    : 'bg-blue-600 hover:bg-blue-700'
-                }`}
-              >
-                {isMuted ? 'UNMUTE AUDIOS' : 'MUTE AUDIOS'}
-              </button>
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-
         {/* SOURCE */}
         <AccordionItem value="source">
           <AccordionTrigger>VIDEO SOURCE</AccordionTrigger>
@@ -313,6 +211,47 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                 </div>
               </div>
             )}
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* PLAYBACK */}
+        <AccordionItem value="playback">
+          <AccordionTrigger>PLAYBACK CONTROL</AccordionTrigger>
+          <AccordionContent>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={onTogglePlay}
+                disabled={playbackState === 'BUFFERING'}
+                className={`w-full py-3 border-none rounded-md font-bold cursor-pointer text-white transition-colors text-base ${
+                  playbackState === 'PLAYING'
+                    ? 'bg-accent-red hover:bg-red-700'
+                    : 'bg-accent-green hover:bg-green-700'
+                } ${
+                  playbackState === 'BUFFERING'
+                    ? 'opacity-50 cursor-not-allowed'
+                    : ''
+                }`}
+              >
+                {playbackState === 'PLAYING'
+                  ? 'PAUSE'
+                  : playbackState === 'BUFFERING'
+                  ? 'BUFFERING...'
+                  : 'PLAY'}
+              </button>
+
+              <button
+                onClick={() =>
+                  onAudioSourceChange(audioSource === null ? 0 : null)
+                }
+                className={`w-full py-3 border-none rounded-md font-bold cursor-pointer text-white transition-colors text-base ${
+                  audioSource !== null
+                    ? 'bg-blue-600 hover:bg-blue-700'
+                    : 'bg-gray-700 hover:bg-gray-600'
+                }`}
+              >
+                {audioSource !== null ? 'MUTE AUDIO' : 'UNMUTE AUDIO'}
+              </button>
+            </div>
           </AccordionContent>
         </AccordionItem>
 
@@ -473,6 +412,69 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               The sync engine continuously monitors all tiles and nudges
               playback to ensure zero-latency synchronization.
             </p>
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* PRESETS MANAGER */}
+        <AccordionItem value="presets">
+          <AccordionTrigger>SAVED CONFIGURATIONS</AccordionTrigger>
+          <AccordionContent>
+            <div className="flex flex-col gap-3">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Config Name (e.g. Morning News)"
+                  id="preset-name-input"
+                  className="flex-1 bg-[#333] border border-[#444] text-white p-2 rounded text-xs focus:outline-none focus:border-accent-blue focus:ring-1 focus:ring-accent-blue"
+                />
+                <button
+                  onClick={() => {
+                    const nameInput = document.getElementById(
+                      'preset-name-input'
+                    ) as HTMLInputElement;
+                    if (nameInput.value) {
+                      handleSavePreset(nameInput.value);
+                      nameInput.value = '';
+                    }
+                  }}
+                  className="bg-accent-blue text-white border-none px-3 rounded cursor-pointer font-bold text-xs hover:bg-blue-600"
+                >
+                  SAVE
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-1 max-h-32 overflow-y-auto">
+                {Object.keys(savedPresets).length === 0 && (
+                  <span className="text-xs text-text-dim italic">
+                    No saved presets
+                  </span>
+                )}
+                {Object.entries(savedPresets).map(([name]) => (
+                  <div
+                    key={name}
+                    className="flex justify-between items-center bg-gray-800 p-2 rounded hover:bg-gray-700 group"
+                  >
+                    <span className="text-xs text-white truncate max-w-[150px]">
+                      {name}
+                    </span>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleLoadPreset(name)}
+                        className="text-xs text-accent-green hover:underline"
+                      >
+                        LOAD
+                      </button>
+                      <button
+                        onClick={() => handleDeletePreset(name)}
+                        className="text-xs text-red-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </AccordionContent>
         </AccordionItem>
       </Accordion>

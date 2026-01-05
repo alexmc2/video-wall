@@ -6,67 +6,74 @@
 > - ⚠️ **Partial**: Partially implemented or hardcoded (needs expansion).
 > - 🔴 **To Do**: Not yet implemented.
 
-## 1. Configuration (Operator)
+## 1. Configuration
 
-| Ref | Requirement                                                  | Priority | Status     | Notes                                                                                                             |
-| :-- | :----------------------------------------------------------- | :------- | :--------- | :---------------------------------------------------------------------------------------------------------------- |
-| 1.1 | Set number of videos displayed (manage bandwidth/processing) | High     | ✅ Done    | Dynamic sizing (rows/cols) implemented in App.tsx.                                                                |
-| 1.2 | Set 2x2, 4x3, 6x4 configurations                             | High     | ✅ Done    | Presets available in Control Panel.                                                                               |
-| 1.3 | Set border colour around video wall                          | High     | 🔴 To Do   | Styling is currently static CSS.                                                                                  |
-| 1.4 | Separate control screen (for dual screen setups)             | High     | ⚠️ Partial | Control panel exists as a sidebar. Multi-window support not verified.                                             |
-| 1.5 | Set fade in/out length (tenths of seconds)                   | Low      | 🔴 To Do   |                                                                                                                   |
-| 1.6 | Set start/end points for each video                          | Low      | 🔴 To Do   |                                                                                                                   |
-| 1.7 | Defaults: Fade=0s, Start=0:00, End=Full                      | Low      | 🔴 To Do   | implicit default is 0/Full, but no explicit settings.                                                             |
-| 1.8 | Auto-start vs Manual start options                           | Medium   | ⚠️ Partial | Videos default to paused or require "Play" click. Auto-play logic exists in sync hooks but needs specific config. |
-| 1.9 | Define sync/async gap per video                              | Medium   | 🔴 To Do   |                                                                                                                   |
+| ID  | Role     | Feature                                                                                                            | Benefit                                                                                                                                                             | Priority | Status     | Notes                                                                                                             |
+| :-- | :------- | :----------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :------- | :--------- | :---------------------------------------------------------------------------------------------------------------- |
+| 1.1 | Operator | Set the number of videos displayed on the video wall                                                               | I can manage the overall effect and manage the bandwidth/processing power required for the effect                                                                   | High     | ✅ Done    | Dynamic sizing (rows/cols) implemented in App.tsx.                                                                |
+| 1.2 | Operator | Set either 2x2, 4x3, 6x4 (across, down) videos to be played on the video wall concurrently                         | I can manage the overall effect and manage the bandwidth/processing power required for the effect                                                                   | High     | ✅ Done    | Presets available in Control Panel.                                                                               |
+| 1.3 | Operator | Set a border colour to be displayed around the video wall                                                          | There is a neutral background around the video wall                                                                                                                 | High     | 🔴 To Do   | Styling is currently static CSS.                                                                                  |
+| 1.4 | Operator | Have a separate control screen (from the video wall screen)                                                        | I can manage settings, load videos, etc. on a separate screen to the video wall (in dual screen setups)                                                             | High     | ⚠️ Partial | Control panel exists as a sidebar. Multi-window support not verified.                                             |
+| 1.5 | Operator | Set a fade in and fade out length for each video in the play queue in tenths of seconds                            | I can control the fade per video in the play queue for the best visual effect rather hanving one global setting for all videos                                      | Low      | 🔴 To Do   |                                                                                                                   |
+| 1.6 | Operator | Set the start and end points for each video for each play queue in tenths of seconds                               | I can remove artefacts from each video, like lead-in or lead-out scenes, which will ensure that the viewers can focus on the music video and skip production extras | Low      | 🔴 To Do   |                                                                                                                   |
+| 1.7 | Operator | Default the fade-in and fade-out lengths to zero seconds                                                           |                                                                                                                                                                     |          | 🔴 To Do   | implicit default is 0/Full.                                                                                       |
+| 1.7 | Operator | Default the start and end points to "0:00" and full video length respectively                                      | The videos will play from start to finsih unless adjusted by the operator                                                                                           | Low      | 🔴 To Do   |                                                                                                                   |
+| 1.8 | Operator | Be able to set whether videos in the play queue should start automatically when at the top of the list or manually | I can control videos start to play                                                                                                                                  | Medium   | ⚠️ Partial | Videos default to paused or require "Play" click. Auto-play logic exists in sync hooks but needs specific config. |
+| 1.9 | Operator | Be able to define the syncronous/asynchronous gap for each video in the play queue separately                      | Each video can have a sync/async mode that creates the best visual effect for each video rather than having one global setting for all videos                       | Medium   | 🔴 To Do   |                                                                                                                   |
 
-## 2. Appearance (Watcher)
+## 2. Presentation
 
-| Ref | Requirement                                 | Priority | Status     | Notes                                                |
-| :-- | :------------------------------------------ | :------- | :--------- | :--------------------------------------------------- |
-| 2.1 | Video wall without windows/controls visible | High     | ✅ Done    | Main video area is separate from sidebar.            |
-| 2.2 | Single border colour around video wall      | High     | ⚠️ Partial | CSS styling exists but is not user-customizable yet. |
-| 2.3 | Watch videos in synchronized way            | High     | ✅ Done    | Core feature (Local & YouTube sync) implemented.     |
-| 2.4 | Maximize space on wall (2x2 etc)            | High     | ✅ Done    | Layout fills availability.                           |
-| 2.5 | Cross-fade support                          | Low      | 🔴 To Do   |                                                      |
+| ID  | Role     | Feature                                                                                                     | Benefit                                                                                    | Priority | Status     | Notes                                                                  |
+| :-- | :------- | :---------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------- | :------- | :--------- | :--------------------------------------------------------------------- |
+| 2.1 | Viewer   | See the video wall without any windows or application controls visible                                      | I can enjoy the video experience without being distracted by unwanted features             | High     | ✅ Done    | Main video area is separate from sidebar.                              |
+| 2.2 | Viewer   | See a single border colour around the video wall                                                            | The backround doesn't distract from the video wall effect                                  | High     | ⚠️ Partial | CSS styling exists but is not user-customizable yet.                   |
+| 2.3 | Viewer   | Watch the videos in a synchronised way                                                                      | The visual effects created by concurrently running videos are most enjoyable               | High     | ✅ Done    | Core feature (Local & YouTube sync) implemented.                       |
+| 2.4 | Viewer   | The video wall in any configuration (2x2, etc.) to take up the maximum amount of space on the wall possible | The visual effect takes up as much of my view of view as possible                          | High     | ✅ Done    | Layout fills availability.                                             |
+| 2.5 | Operator | See the current video fade out and the new video fade in with a pre-defined fade length for each video      | The videos can be blended seamlessly from one to the next                                  | Low      | 🔴 To Do   |                                                                        |
+| 2.6 | Viewer   | Hear the audio from only one video in the wall                                                              | The overlapping audio streams do not create noise and distortion artifacts during playback | High     | ⚠️ Partial | Audio muting implemented, but single-source logic not fully automatic. |
 
-## 4. Play Queue (Operator)
+## 4. Play Queue
 
-| Ref | Requirement                                             | Priority | Status     | Notes                                                               |
-| :-- | :------------------------------------------------------ | :------- | :--------- | :------------------------------------------------------------------ |
-| 4.1 | Enter link to video (local/online) to queue             | High     | ⚠️ Partial | Can load single Local File or YouTube ID. Queueing not implemented. |
-| 4.2 | Add video into play queue (while playing)               | Medium   | 🔴 To Do   |                                                                     |
-| 4.3 | Queue capacity up to 15 videos                          | Medium   | 🔴 To Do   |                                                                     |
-| 4.4 | See currently playing video vs queue                    | High     | ⚠️ Partial | Current video is visible. Queue is not.                             |
-| 4.5 | Re-order play queue                                     | Medium   | 🔴 To Do   |                                                                     |
-| 4.6 | View play queue list (sorted)                           | Medium   | 🔴 To Do   |                                                                     |
-| 4.7 | Remove capabilities (auto-remove played, manual delete) | Medium   | 🔴 To Do   |                                                                     |
+| ID  | Role     | Feature                                                                                                    | Benefit                                                                                             | Priority | Status     | Notes                                                               |
+| :-- | :------- | :--------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- | :------- | :--------- | :------------------------------------------------------------------ |
+| 4.1 | Operator | Enter a link to a video (locally stored or online) that can be queued to play                              | I can select an appropriate video to display on the video wall                                      | High     | ⚠️ Partial | Can load single Local File or YouTube ID. Queueing not implemented. |
+| 4.2 | Operator | Add an entered video link to a play queue                                                                  | I can create a playlist/add videos whilst an existing video is playing                              | Medium   | 🔴 To Do   |                                                                     |
+| 4.3 | Operator | Have a play queue that can hold up to 15 video links at any one time                                       | I can create an extensive forward play list for "fire and forget" operation                         | Medium   | 🔴 To Do   |                                                                     |
+| 4.4 | Operator | See which video is currently playing (name, file path) in the control window separatly from the play queue | I can see which video is currently playing separately from the play queue                           | High     | ⚠️ Partial | Current video is visible. Queue is not.                             |
+| 4.5 | Operator | Move videos in the play queue up and down the list                                                         | I can reorder the play queue if I want to / need to                                                 | Medium   | 🔴 To Do   |                                                                     |
+| 4.6 | Operator | See the name and file path for each video in the play queue in a list sorted in play order                 | I can know what I have added to the list, understand the running order and manage the running order | Medium   | 🔴 To Do   |                                                                     |
+| 4.7 | Operator | Remove the currently playing video from the play queue when it starts to play                              | I can see clearly what is playing versus what is queued to play                                     | Medium   | 🔴 To Do   |                                                                     |
+| 4.7 | Operator | Delete videos in the play queue                                                                            | I can remove videos from the queue that I no longer want to play                                    | Medium   | 🔴 To Do   |                                                                     |
 
-## 5. Play Control (Operator)
+## 5. Play Control
 
-| Ref | Requirement                         | Priority | Status     | Notes                                             |
-| :-- | :---------------------------------- | :------- | :--------- | :------------------------------------------------ |
-| 5.1 | Play next automatically or manually | High     | 🔴 To Do   | Requires Queue implementation.                    |
-| 5.2 | Pause, restart, skip forward        | Medium   | ⚠️ Partial | Pause/Play works. Skip/Restart not fully exposed. |
-| 5.3 | Perfect 0ms sync delay              | High     | ✅ Done    | Sync engine implemented for this specific goal.   |
-| 5.4 | Asynchronous gaps (100ms-500ms)     | High     | 🔴 To Do   |                                                   |
+| ID  | Role     | Feature                                                                                                                                            | Benefit                                                                                                          | Priority | Status     | Notes                                             |
+| :-- | :------- | :------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------- | :------- | :--------- | :------------------------------------------------ |
+| 5.1 | Operator | Play the next video in the playlist automatically after the previous one or manually                                                               | I can control when the next video starts                                                                         | High     | 🔴 To Do   | Requires Queue implementation.                    |
+| 5.2 | Operator | Pause, restart or skip forward the currently playing video                                                                                         | I can control when the video is playing or move quickly forwards in the play list                                | Medium   | ⚠️ Partial | Pause/Play works. Skip/Restart not fully exposed. |
+| 5.3 | Operator | Play the videos synchronously on the wall, i.e. all video images are in perfect synch with 0ms delay between each one based on settings            | I can achieve interesting video effects from the synchronous playing                                             | High     | ✅ Done    | Sync engine implemented for this specific goal.   |
+| 5.4 | Operator | Play each video on the wall with predefined asynchronous gaps between each successive video (gaps to be between 100ms and 500ms) based on settings | I can achieve interesting video effects from asynchronous playing                                                | High     | 🔴 To Do   |                                                   |
+| 5.5 | Operator | Be able to crop the video on the vertical edges                                                                                                    | Crop any black vertical bands that might be either side of the video, e.g. if created for older CRT televisions. | Medium   | 🔴 To Do   |                                                   |
+| 5.5 | Operator | Be able to crop the video on the horizontal edges                                                                                                  | Crop any black horizontal bands that might be above.below the video, e.g. if created in 16:9 format.             | Medium   | 🔴 To Do   |                                                   |
 
-## 6. Play History (Operator)
+## 6. Play History
 
-| Ref | Requirement                     | Priority | Status   | Notes |
-| :-- | :------------------------------ | :------- | :------- | :---- |
-| 6.1 | Retain history between sessions | Low      | 🔴 To Do |       |
-| 6.2 | Delete from history             | Low      | 🔴 To Do |       |
-| 6.3 | Sort history                    | Low      | 🔴 To Do |       |
-| 6.4 | Search history                  | Low      | 🔴 To Do |       |
-| 6.5 | Smart text search               | Low      | 🔴 To Do |       |
-| 6.6 | Retain settings in history      | Low      | 🔴 To Do |       |
+| ID  | Role     | Feature                                                                                                                                            | Benefit                                                                                | Priority | Status   | Notes |
+| :-- | :------- | :------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------- | :------- | :------- | :---- |
+| 6.1 | Operator | Retain a history of queued videos between app sessions                                                                                             | I can quickly retrive a video to re-add it to the queue when needed                    | Low      | 🔴 To Do |       |
+| 6.2 | Operator | Be able to delete videos in the play history after selecting "delete" and then confirming "yes I want to delete"                                   | I can remove unwanted videos from the history                                          | Low      | 🔴 To Do |       |
+| 6.3 | Operator | Sort videos in the history view by title and path                                                                                                  | I can more easly locate videos to re-add to the play queue                             | Low      | 🔴 To Do |       |
+| 6.4 | Operator | Search the play history for videos by name/part of name or path/part of path                                                                       | I can more easly locate videos to re-add to the play queue                             | Low      | 🔴 To Do |       |
+| 6.5 | Operator | Search for strings that contain text just by entering that text, e.g. "EXT" will return anything that contains "EXT" in it without using wildcards | I can more easly locate videos to re-add to the play queue                             | Low      | 🔴 To Do |       |
+| 6.6 | Operator | Store fade-in, fade-out, start and stop settings for each video in the play history                                                                | Videos will play as expected if re-added to the queue                                  | Low      | 🔴 To Do |       |
+| 6.7 | Operator | Store vertical and horizontal cropping settings in the video history                                                                               | These values are automaticlly re-used if I re-queue a video from the play history.     | Low      | 🔴 To Do |       |
+| 6.8 | Operator | Store the preferred number of windows for a video (e.g. 2x2, etc.)                                                                                 | This value can be automatically re-used if I re-queue the video from the play history. | Low      | 🔴 To Do |       |
 
-## 7. Play Operation (Operator)
+## 7. Play Operation
 
-| Ref | Requirement                        | Priority | Status   | Notes           |
-| :-- | :--------------------------------- | :------- | :------- | :-------------- |
-| 7.1 | Buffer next video for instant play | High     | 🔴 To Do | Requires Queue. |
+| ID  | Role     | Feature                                                                             | Benefit                                                                                                                    | Priority | Status   | Notes           |
+| :-- | :------- | :---------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------- | :------- | :------- | :-------------- |
+| 7.1 | Operator | The app to buffer the next video in the play queue before it is ready start playing | The app delivers the desired sync/effect cleanly, and Subsequent videos play instantly on completion of the previous video | High     | 🔴 To Do | Requires Queue. |
 
 ---
 

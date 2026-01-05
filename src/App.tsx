@@ -23,7 +23,7 @@ const useLoadYouTubeScript = () => {
 function App() {
   const [sourceMode, setSourceMode] = useState<SourceMode>('local');
   const [isSyncActive, setIsSyncActive] = useState(true);
-  const [isMuted, setIsMuted] = useState(true);
+  const [audioSource, setAudioSource] = useState<number | null>(null); // null = all muted, number = index
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   // Grid Config State
@@ -57,31 +57,37 @@ function App() {
     // Default to 16:9 if 0 or invalid
     const ratio = currentAspectRatio || 1.77;
 
-    const screenRatio = width / height;
-    let bestConfig = { rows: 2, cols: 2 };
-    let minError = Number.MAX_VALUE;
+    // Target a sensible minimum tile width to ensure we have "multiple videos"
+    // The user reference code suggests filling the screen.
+    // Let's aim for a tile width around 320px - 480px depending on density.
+    // We want to maximize density without making them too small.
+    // Let's target roughly 320px width minimum.
+    const TARGET_TILE_WIDTH = 320;
 
-    // Iterate through reasonable row counts (1 to 8)
-    for (let r = 1; r <= 8; r++) {
-      const c = Math.round((screenRatio * r) / ratio);
-      if (c < 1) continue;
-      if (c > 12) continue; // limit cols
+    let bestCols = Math.floor(width / TARGET_TILE_WIDTH);
+    // Ensure at least 1 col
+    bestCols = Math.max(1, bestCols);
 
-      const actualTileRatio = width / c / (height / r);
-      const error = Math.abs(actualTileRatio - ratio);
+    // Calculated height based on ratio
+    const tileHeight = width / bestCols / ratio;
 
-      if (error < minError) {
-        minError = error;
-        bestConfig = { rows: r, cols: c };
-      }
+    let bestRows = Math.floor(height / tileHeight);
+    // Ensure at least 1 row
+    bestRows = Math.max(1, bestRows);
+
+    // If the grid is too sparse (e.g. 1x1 on a large screen), force a minimum density
+    // For a "Video Wall" feel, we usually want at least 2x2 if space allows
+    if (width > 800 && height > 600) {
+      bestCols = Math.max(2, bestCols);
+      bestRows = Math.max(2, bestRows);
     }
 
     setGridConfig((prev) => {
       // Avoid update if same
-      if (prev.rows === bestConfig.rows && prev.cols === bestConfig.cols) {
+      if (prev.rows === bestRows && prev.cols === bestCols) {
         return prev;
       }
-      return { ...prev, rows: bestConfig.rows, cols: bestConfig.cols };
+      return { ...prev, rows: bestRows, cols: bestCols };
     });
   }, []); // Dependencies are intentionally empty, arguments passed in.
 
@@ -134,6 +140,7 @@ function App() {
     setSourceMode(mode);
     localVideoRefs.current = [];
     ytPlayerRefs.current = [];
+    setAudioSource(null); // Reset audio on mode switch
   };
 
   return (
@@ -203,8 +210,8 @@ function App() {
               onToggleSync={setIsSyncActive}
               playbackState={playbackState}
               onTogglePlay={togglePlay}
-              isMuted={isMuted}
-              onToggleMute={() => setIsMuted(!isMuted)}
+              audioSource={audioSource}
+              onAudioSourceChange={setAudioSource}
               zoomLevel={zoomLevel}
               onZoomChange={setZoomLevel}
               gridConfig={gridConfig}
@@ -262,7 +269,7 @@ function App() {
                 ref={(el) => {
                   localVideoRefs.current[i] = el;
                 }}
-                muted={isMuted}
+                muted={audioSource !== i}
                 shouldBuffer={playbackState === 'BUFFERING'}
                 onReady={() => signalReady(i)}
                 scale={zoomLevel}
@@ -275,7 +282,7 @@ function App() {
                 ref={(player) => {
                   ytPlayerRefs.current[i] = player;
                 }}
-                muted={isMuted}
+                muted={audioSource !== i}
                 shouldBuffer={playbackState === 'BUFFERING'}
                 onReady={() => signalReady(i)}
                 scale={zoomLevel}
