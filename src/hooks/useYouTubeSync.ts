@@ -1,0 +1,89 @@
+import { useEffect, useRef, useCallback } from 'react';
+import type { YouTubePlayer } from '../components/YouTubeTile';
+
+interface UseYouTubeSyncProps {
+  playersRef: React.MutableRefObject<(YouTubePlayer | null)[]>;
+  isSyncEnabled: boolean;
+  isPlaying: boolean;
+}
+
+export const useYouTubeSync = ({
+  playersRef,
+  isSyncEnabled,
+  isPlaying,
+}: UseYouTubeSyncProps) => {
+  const intervalRef = useRef<number>(0);
+
+  const performSyncCheck = useCallback(() => {
+    const players = playersRef.current.filter((p) => p && p.getCurrentTime);
+    if (players.length < 2 || !isSyncEnabled) return;
+
+    const master = players[0];
+    const masterTime = master?.getCurrentTime();
+
+    // Safety check: if master is not playing or invalid
+    if (typeof masterTime !== 'number') return;
+
+    players.forEach((slave, index) => {
+      if (index === 0) return; // Skip master
+      if (!slave) return;
+
+      const slaveTime = slave.getCurrentTime();
+      const drift = slaveTime - masterTime;
+
+      // YouTube drift correction strategy
+      // We can't set playbackRate arbitrarily float (like 1.02), only discrete [0.25, 0.5, 1, 1.5, 2] usually.
+      // So we mainly rely on seeking for drifting.
+
+      const THRESHOLD = 0.5; // 500ms tolerance
+      const HARD_THRESHOLD = 2.0;
+
+      if (Math.abs(drift) > HARD_THRESHOLD) {
+        // Hard snap
+        // console.log(`Hard Seek Slave ${index}`, drift);
+        slave.seekTo(masterTime, true);
+      } else if (Math.abs(drift) > THRESHOLD) {
+        // Soft corrections are hard with discrete rates.
+        // For now, we just seek if it's annoying.
+        // console.log(`Soft Seek Slave ${index}`, drift);
+
+        // Optional: If we want to try playbackRate, we check available rates.
+        // const rates = slave.getAvailablePlaybackRates();
+        // But usually seeking is cleaner for "keeping together" even if audio glitches.
+        slave.seekTo(masterTime, true);
+      }
+    });
+  }, [playersRef, isSyncEnabled]);
+
+  // Sync Loop
+  useEffect(() => {
+    if (!isPlaying) {
+      clearInterval(intervalRef.current);
+      return;
+    }
+
+    // Polling interval.
+    // RequestAnimationFrame is too fast for YouTube API calls (they are async/bridged).
+    // 200ms - 500ms is usually safe.
+    intervalRef.current = window.setInterval(performSyncCheck, 250);
+
+    return () => clearInterval(intervalRef.current);
+  }, [isPlaying, isSyncEnabled, performSyncCheck]);
+
+  // Global Play/Pause Control
+  useEffect(() => {
+    const players = playersRef.current.filter((p) => p && p.getPlayerState);
+
+    players.forEach((p) => {
+      if (!p) return;
+      if (isPlaying) {
+        console.log('Play');
+        p.playVideo();
+      } else {
+        console.log('Pause');
+        // Check state first to avoid error? YT handles it.
+        p.pauseVideo();
+      }
+    });
+  }, [isPlaying, playersRef]);
+};
