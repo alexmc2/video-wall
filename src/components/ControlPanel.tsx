@@ -34,7 +34,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   isMuted,
   onToggleMute,
 }) => {
-  const [ytInput, setYtInput] = useState('jt7AF2RCMhg');
+  const [ytInput, setYtInput] = useState('5IsSpAOD6K8');
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -122,7 +122,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                 LOAD
               </button>
             </div>
-            <p className="text-xs text-gray-500 mt-1">Try: jt7AF2RCMhg</p>
+            <p className="text-xs text-gray-500 mt-1">Try: 5IsSpAOD6K8</p>
           </>
         )}
       </div>
