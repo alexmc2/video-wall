@@ -1,9 +1,9 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { VideoTile } from './components/VideoTile';
 import { YouTubeTile } from './components/YouTubeTile';
 import type { YouTubePlayer } from './components/YouTubeTile';
 import { ControlPanel } from './components/ControlPanel';
-import type { SourceMode } from './components/ControlPanel';
+import type { SourceMode, GridConfig } from './components/ControlPanel';
 import { useLocalSync } from './hooks/useLocalSync';
 import { useYouTubeSync } from './hooks/useYouTubeSync';
 import { useDirector } from './hooks/useDirector';
@@ -22,10 +22,20 @@ const useLoadYouTubeScript = () => {
 
 function App() {
   const [sourceMode, setSourceMode] = useState<SourceMode>('local');
-  // const [isPlaying, setIsPlaying] = useState(false); // Managed by Director now
   const [isSyncActive, setIsSyncActive] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  // Grid Config State
+  const [gridConfig, setGridConfig] = useState<GridConfig>({
+    rows: 2,
+    cols: 2,
+    aspectRatio: 1.77, // 16:9
+    isAutoFit: false,
+  });
+
+  // Calculate total tiles
+  const totalTiles = gridConfig.rows * gridConfig.cols;
 
   // Local State
   const [videoSrc, setVideoSrc] = useState<string>('');
@@ -39,28 +49,74 @@ function App() {
   // Load API
   useLoadYouTubeScript();
 
-  // Sync Engines moved below
+  // Handle Auto-Fit
+  const performGridOptimization = useCallback((currentAspectRatio: number) => {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    // Default to 16:9 if 0 or invalid
+    const ratio = currentAspectRatio || 1.77;
+
+    const screenRatio = width / height;
+    let bestConfig = { rows: 2, cols: 2 };
+    let minError = Number.MAX_VALUE;
+
+    // Iterate through reasonable row counts (1 to 8)
+    for (let r = 1; r <= 8; r++) {
+      const c = Math.round((screenRatio * r) / ratio);
+      if (c < 1) continue;
+      if (c > 12) continue; // limit cols
+
+      const actualTileRatio = width / c / (height / r);
+      const error = Math.abs(actualTileRatio - ratio);
+
+      if (error < minError) {
+        minError = error;
+        bestConfig = { rows: r, cols: c };
+      }
+    }
+
+    setGridConfig((prev) => {
+      // Avoid update if same
+      if (prev.rows === bestConfig.rows && prev.cols === bestConfig.cols) {
+        return prev;
+      }
+      return { ...prev, rows: bestConfig.rows, cols: bestConfig.cols };
+    });
+  }, []); // Dependencies are intentionally empty, arguments passed in.
+
+  // Trigger auto-fit on resize or config change
+  useEffect(() => {
+    if (!gridConfig.isAutoFit) return;
+
+    const runOptimization = () =>
+      performGridOptimization(gridConfig.aspectRatio);
+
+    // Run immediately
+    runOptimization();
+
+    const handleResize = () => runOptimization();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [gridConfig.isAutoFit, gridConfig.aspectRatio, performGridOptimization]);
+
+  // Expose manual trigger
+  const optimizeGrid = () => performGridOptimization(gridConfig.aspectRatio);
 
   const handleFileSelect = (file: File) => {
     const url = URL.createObjectURL(file);
     setVideoSrc(url);
-    // setIsPlaying(false);
   };
 
   const togglePlay = () => {
-    // setIsPlaying(!isPlaying);
     requestPlay();
   };
 
   const { playbackState, requestPlay, signalReady } = useDirector(
-    4, // 4 tiles
-    () => {}, // setIsPlaying(true) - no longer needed as local state
-    () => {} // setIsPlaying(false)
+    totalTiles,
+    () => {},
+    () => {}
   );
-
-  // Sync Engines need to know if we are "playing" in the engine sense.
-  // The engine should run when we are PLAYING.
-  // When BUFFERING, the engine should effectively be paused/idle or handled by the buffering logic.
 
   useLocalSync({
     videosRef: localVideoRefs,
@@ -75,11 +131,7 @@ function App() {
   });
 
   const handleModeChange = (mode: SourceMode) => {
-    // setIsPlaying(false);
     setSourceMode(mode);
-    // Reset refs on mode switch?
-    // Actually we just persist them, but the layout unmounts components so refs might need care.
-    // React refs callback will handle re-assignment on mount.
     localVideoRefs.current = [];
     ytPlayerRefs.current = [];
   };
@@ -118,8 +170,6 @@ function App() {
         `}
       >
         <div className="w-full flex-1 overflow-y-auto">
-          {' '}
-          {/* Inner wrapper fixed width */}
           <div className="relative">
             {/* Desktop Collapse Toggle - Inside Sidebar */}
             <button
@@ -148,7 +198,6 @@ function App() {
               onFileSelect={handleFileSelect}
               onVideoIdChange={(id) => {
                 setYtVideoId(id);
-                // setIsPlaying(false);
               }}
               isSyncActive={isSyncActive}
               onToggleSync={setIsSyncActive}
@@ -158,6 +207,9 @@ function App() {
               onToggleMute={() => setIsMuted(!isMuted)}
               zoomLevel={zoomLevel}
               onZoomChange={setZoomLevel}
+              gridConfig={gridConfig}
+              onGridConfigChange={setGridConfig}
+              onOptimizeGrid={optimizeGrid}
             />
           </div>
         </div>
@@ -194,12 +246,16 @@ function App() {
         </button>
       )}
 
-      {/* Main Content */}
+      {/* Main Content - Dynamic Grid */}
       <main
-        className={`flex-1 grid grid-cols-2 grid-rows-2 bg-black w-full h-full transition-all duration-300`}
+        className={`flex-1 grid bg-black w-full h-full transition-all duration-300`}
+        style={{
+          gridTemplateColumns: `repeat(${gridConfig.cols}, minmax(0, 1fr))`,
+          gridTemplateRows: `repeat(${gridConfig.rows}, minmax(0, 1fr))`,
+        }}
       >
         {sourceMode === 'local'
-          ? Array.from({ length: 4 }).map((_, i) => (
+          ? Array.from({ length: totalTiles }).map((_, i) => (
               <VideoTile
                 key={`local-${i}`}
                 src={videoSrc}
@@ -212,7 +268,7 @@ function App() {
                 scale={zoomLevel}
               />
             ))
-          : Array.from({ length: 4 }).map((_, i) => (
+          : Array.from({ length: totalTiles }).map((_, i) => (
               <YouTubeTile
                 key={`yt-${i}`}
                 videoId={ytVideoId}
