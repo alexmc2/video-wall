@@ -20,6 +20,9 @@ interface ControlPanelProps {
   onTogglePlay: () => void;
   isMuted: boolean;
   onToggleMute: () => void;
+  // YouTube Zoom
+  zoomLevel: number;
+  onZoomChange: (zoom: number) => void;
 }
 
 export const ControlPanel: React.FC<ControlPanelProps> = ({
@@ -33,6 +36,8 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   onTogglePlay,
   isMuted,
   onToggleMute,
+  zoomLevel,
+  onZoomChange,
 }) => {
   const [ytInput, setYtInput] = useState('5IsSpAOD6K8');
 
@@ -123,6 +128,22 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               </button>
             </div>
             <p className="text-xs text-gray-500 mt-1">Try: 5IsSpAOD6K8</p>
+
+            <div className="mt-2">
+              <label className="text-xs uppercase tracking-wider text-text-dim font-semibold flex justify-between">
+                <span>Zoom / Crop</span>
+                <span className="text-white">{zoomLevel.toFixed(1)}x</span>
+              </label>
+              <input
+                type="range"
+                min="1"
+                max="3"
+                step="0.1"
+                value={zoomLevel}
+                onChange={(e) => onZoomChange(parseFloat(e.target.value))}
+                className="w-full mt-1 accent-accent-red cursor-pointer"
+              />
+            </div>
           </>
         )}
       </div>

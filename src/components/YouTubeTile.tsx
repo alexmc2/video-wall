@@ -29,11 +29,12 @@ interface YouTubeTileProps {
   onReady?: () => void;
   shouldBuffer?: boolean;
   muted?: boolean;
+  scale?: number;
 }
 
 export const YouTubeTile = forwardRef<YouTubePlayer | null, YouTubeTileProps>(
   (props, ref) => {
-    const { videoId, onPlayerReady, onReady, shouldBuffer } = props;
+    const { videoId, onPlayerReady, onReady, shouldBuffer, scale = 1 } = props;
     const containerRef = useRef<HTMLDivElement>(null);
     const playerRef = useRef<YouTubePlayer | null>(null);
 
@@ -200,11 +201,24 @@ export const YouTubeTile = forwardRef<YouTubePlayer | null, YouTubeTileProps>(
           playerRef.current = null;
         }
       };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [videoId]); // Only re-init on videoId change
 
     return (
       <div className="w-full h-full relative overflow-hidden border border-black">
-        <div ref={containerRef} className="w-full h-full object-cover block" />
+        <div
+          className="w-full h-full"
+          style={{
+            transform: `scale(${scale})`,
+            transformOrigin: 'center center',
+            transition: 'transform 0.1s ease-out',
+          }}
+        >
+          <div
+            ref={containerRef}
+            className="w-full h-full object-cover block"
+          />
+        </div>
       </div>
     );
   }

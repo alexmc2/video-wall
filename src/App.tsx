@@ -34,6 +34,7 @@ function App() {
   // YouTube State
   const [ytVideoId, setYtVideoId] = useState<string>('5IsSpAOD6K8');
   const ytPlayerRefs = useRef<(YouTubePlayer | null)[]>([]);
+  const [zoomLevel, setZoomLevel] = useState(1);
 
   // Load API
   useLoadYouTubeScript();
@@ -116,7 +117,7 @@ function App() {
           ${isSidebarOpen ? 'md:w-[320px]' : 'md:w-0 md:border-r-0'}
         `}
       >
-        <div className="w-[300px] flex-1 overflow-y-auto">
+        <div className="w-full flex-1 overflow-y-auto">
           {' '}
           {/* Inner wrapper fixed width */}
           <div className="relative">
@@ -155,6 +156,8 @@ function App() {
               onTogglePlay={togglePlay}
               isMuted={isMuted}
               onToggleMute={() => setIsMuted(!isMuted)}
+              zoomLevel={zoomLevel}
+              onZoomChange={setZoomLevel}
             />
           </div>
         </div>
@@ -218,6 +221,7 @@ function App() {
                 muted={isMuted}
                 shouldBuffer={playbackState === 'BUFFERING'}
                 onReady={() => signalReady(i)}
+                scale={zoomLevel}
               />
             ))}
       </main>
