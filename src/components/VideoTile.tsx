@@ -28,7 +28,7 @@ export const VideoTile = forwardRef<HTMLVideoElement, VideoTileProps>(
         */}
         <video
           ref={ref}
-          src={src}
+          src={src || undefined}
           className="w-full h-full object-cover block"
           muted={muted}
           playsInline

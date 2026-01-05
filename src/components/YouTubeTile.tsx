@@ -41,33 +41,92 @@ export const YouTubeTile = forwardRef<YouTubePlayer | null, YouTubeTileProps>(
     useImperativeHandle(
       ref,
       () => ({
-        playVideo: () => playerRef.current?.playVideo(),
-        pauseVideo: () => playerRef.current?.pauseVideo(),
-        seekTo: (s, a) => playerRef.current?.seekTo(s, a),
-        getCurrentTime: () => playerRef.current?.getCurrentTime() ?? 0,
-        getPlayerState: () => playerRef.current?.getPlayerState() ?? -1,
-        mute: () => playerRef.current?.mute(),
-        unMute: () => playerRef.current?.unMute(),
-        destroy: () => playerRef.current?.destroy(),
+        playVideo: () => {
+          if (typeof playerRef.current?.playVideo === 'function') {
+            playerRef.current.playVideo();
+          }
+        },
+        pauseVideo: () => {
+          if (typeof playerRef.current?.pauseVideo === 'function') {
+            playerRef.current.pauseVideo();
+          }
+        },
+        seekTo: (s, a) => {
+          if (typeof playerRef.current?.seekTo === 'function') {
+            playerRef.current.seekTo(s, a);
+          }
+        },
+        getCurrentTime: () => {
+          return typeof playerRef.current?.getCurrentTime === 'function'
+            ? playerRef.current.getCurrentTime()
+            : 0;
+        },
+        getPlayerState: () => {
+          return typeof playerRef.current?.getPlayerState === 'function'
+            ? playerRef.current.getPlayerState()
+            : -1;
+        },
+        mute: () => {
+          if (typeof playerRef.current?.mute === 'function') {
+            playerRef.current.mute();
+          }
+        },
+        unMute: () => {
+          if (typeof playerRef.current?.unMute === 'function') {
+            playerRef.current.unMute();
+          }
+        },
+        destroy: () => {
+          if (typeof playerRef.current?.destroy === 'function') {
+            playerRef.current.destroy();
+          }
+        },
       }),
       []
-    ); // Empty dependency array is safe because we use ref.current inside callbacks
+    );
 
-    // Use a ref for onPlayerReady to avoid re-triggering the effect
+    // Refs for props to avoid re-init deps
     const onPlayerReadyRef = useRef(onPlayerReady);
+    const onReadyRef = useRef(onReady);
+    const shouldBufferRef = useRef(shouldBuffer);
+
     useEffect(() => {
       onPlayerReadyRef.current = onPlayerReady;
     }, [onPlayerReady]);
 
+    useEffect(() => {
+      onReadyRef.current = onReady;
+    }, [onReady]);
+
+    useEffect(() => {
+      shouldBufferRef.current = shouldBuffer;
+    }, [shouldBuffer]);
+
+    // specific effect for buffering trigger when shouldBuffer becomes true
+    useEffect(() => {
+      if (
+        shouldBuffer &&
+        playerRef.current &&
+        typeof playerRef.current.playVideo === 'function'
+      ) {
+        // If we are already ready/cued, we might need to kick it.
+        // But usually the player state change handles it.
+        // This is mostly for if we switch to buffering state AFTER player is already loaded.
+        playerRef.current.playVideo();
+      }
+    }, [shouldBuffer]);
+
     // Dynamic Mute Handling
     useEffect(() => {
       if (!playerRef.current) return;
-      if (typeof props.muted === 'undefined') return; // If not controlled, ignore
+      if (typeof props.muted === 'undefined') return;
 
       if (props.muted) {
-        playerRef.current.mute();
+        if (typeof playerRef.current.mute === 'function')
+          playerRef.current.mute();
       } else {
-        playerRef.current.unMute();
+        if (typeof playerRef.current.unMute === 'function')
+          playerRef.current.unMute();
       }
     }, [props.muted]);
 
@@ -96,21 +155,22 @@ export const YouTubeTile = forwardRef<YouTubePlayer | null, YouTubeTileProps>(
           playsinline: 1,
           rel: 0,
           showinfo: 0,
-          mute: initialMute ? 1 : 0, // Start muted based on prop
+          mute: initialMute ? 1 : 0,
         },
         events: {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           onStateChange: (event: any) => {
-            // State 1 = Playing, 5 = Cued.
-            // If we are buffering (shouldBuffer = true), we might want to capture when it actually hits "playing"
-            // then immediately pause it to signal ready.
-            if (shouldBuffer && event.data === 1) {
-              // It started playing, now we know it's buffered.
-              // Pause it immediately/seek to start.
+            // Check refs for latest values
+            const shouldBufferVal = shouldBufferRef.current;
+
+            // State 1 = Playing
+            if (shouldBufferVal && event.data === 1) {
               if (playerRef.current) {
-                playerRef.current.pauseVideo();
-                playerRef.current.seekTo(0, true);
-                if (onReady) onReady();
+                if (typeof playerRef.current.pauseVideo === 'function')
+                  playerRef.current.pauseVideo();
+                if (typeof playerRef.current.seekTo === 'function')
+                  playerRef.current.seekTo(0, true);
+                if (onReadyRef.current) onReadyRef.current();
               }
             }
           },
@@ -119,15 +179,14 @@ export const YouTubeTile = forwardRef<YouTubePlayer | null, YouTubeTileProps>(
             if (onPlayerReadyRef.current)
               onPlayerReadyRef.current(event.target);
 
-            // Enforce mute state on ready as well, just in case
             if (initialMute) {
               event.target.mute();
             } else {
               event.target.unMute();
             }
 
-            // Priming trigger: if we need to buffer, we play() then wait for state change.
-            if (shouldBuffer) {
+            // Priming trigger using ref value
+            if (shouldBufferRef.current) {
               event.target.playVideo();
             }
           },
@@ -136,15 +195,12 @@ export const YouTubeTile = forwardRef<YouTubePlayer | null, YouTubeTileProps>(
 
       return () => {
         if (playerRef.current) {
-          playerRef.current.destroy();
+          if (typeof playerRef.current.destroy === 'function')
+            playerRef.current.destroy();
           playerRef.current = null;
         }
       };
-    }, [videoId, shouldBuffer, onReady, props.muted]); // Added props.muted to dependencies only if we want re-init (we don't usually)
-    // Actually, we do NOT want to re-init on mute change. We want the separate effect to handle it.
-    // So we should NOT include props.muted in this dependency array if we want to avoid destroy/recreate.
-    // However, I need to be careful with the closure over 'initialMute'.
-    // Let me refactor the replacement to be cleaner and avoid dependency array issues.
+    }, [videoId]); // Only re-init on videoId change
 
     return (
       <div className="w-full h-full relative overflow-hidden border border-black">
