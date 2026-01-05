@@ -5,10 +5,11 @@ interface VideoTileProps {
   muted?: boolean;
   onReady?: () => void;
   shouldBuffer?: boolean;
+  scale?: number;
 }
 
 export const VideoTile = forwardRef<HTMLVideoElement, VideoTileProps>(
-  ({ src, muted = true, onReady, shouldBuffer }, ref) => {
+  ({ src, muted = true, onReady, shouldBuffer, scale = 1 }, ref) => {
     // Handling local video buffering readiness
     const handleCanPlay = () => {
       // For local video, we might consider 'canplaythrough' as enough.
@@ -22,19 +23,28 @@ export const VideoTile = forwardRef<HTMLVideoElement, VideoTileProps>(
 
     return (
       <div className="w-full h-full relative overflow-hidden border border-black">
-        {/*
+        <div
+          className="w-full h-full"
+          style={{
+            transform: `scale(${scale})`,
+            transformOrigin: 'center center',
+            transition: 'transform 0.1s ease-out',
+          }}
+        >
+          {/*
           muted={true} is critical for autoplay policies and initial sync.
           playsInline is needed for mobile/some browsers.
         */}
-        <video
-          ref={ref}
-          src={src || undefined}
-          className="w-full h-full object-cover block"
-          muted={muted}
-          playsInline
-          loop
-          onCanPlayThrough={handleCanPlay}
-        />
+          <video
+            ref={ref}
+            src={src || undefined}
+            className="w-full h-full object-cover block"
+            muted={muted}
+            playsInline
+            loop
+            onCanPlayThrough={handleCanPlay}
+          />
+        </div>
       </div>
     );
   }

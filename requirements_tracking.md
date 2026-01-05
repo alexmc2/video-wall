@@ -1,4 +1,3 @@
-# Video Wall Project Tracker
 
 > [!NOTE]
 > This document tracks the implementation status of the Video Wall requirements.

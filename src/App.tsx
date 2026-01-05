@@ -209,6 +209,7 @@ function App() {
                 muted={isMuted}
                 shouldBuffer={playbackState === 'BUFFERING'}
                 onReady={() => signalReady(i)}
+                scale={zoomLevel}
               />
             ))
           : Array.from({ length: 4 }).map((_, i) => (
