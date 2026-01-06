@@ -190,8 +190,7 @@ export const YouTubeTile = forwardRef<YouTubePlayer | null, YouTubeTileProps>(
               if (playerRef.current) {
                 if (typeof playerRef.current.pauseVideo === 'function')
                   playerRef.current.pauseVideo();
-                if (typeof playerRef.current.seekTo === 'function')
-                  playerRef.current.seekTo(0, true);
+                // Removed seekTo(0) to allow resume.
                 if (onReadyRef.current) onReadyRef.current();
               }
             }

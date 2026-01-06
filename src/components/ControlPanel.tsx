@@ -47,6 +47,7 @@ interface ControlPanelProps {
   currentTime: number;
   duration: number;
   onSeek: (time: number) => void;
+  onRestart: () => void;
   // Preview Info
   currentVideoSrc: string;
   currentVideoId: string;
@@ -102,6 +103,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   currentTime,
   duration,
   onSeek,
+  onRestart,
   currentVideoSrc,
   currentVideoId,
   gridConfig,
@@ -309,8 +311,16 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                 {audioSource !== null ? 'MUTE AUDIO' : 'UNMUTE AUDIO'}
               </button>
 
+              <button
+                onClick={onRestart}
+                className="text-xs font-bold text-text-dim hover:text-white bg-transparent hover:bg-white/10 px-2 py-1 rounded self-start transition-colors"
+                title="Restart Video from Beginning"
+              >
+                ↻ RESTART VIDEO
+              </button>
+
               {/* SCRUBBER & PREVIEW */}
-              <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-white/10">
+              <div className="flex flex-col gap-2 mt-1 pt-4 border-t border-white/10">
                 <div className="flex justify-between items-center bg-black/40 p-2 rounded relative overflow-hidden group">
                   {/* MINI PREVIEW */}
                   <div className="w-24 h-14 bg-black rounded overflow-hidden mr-3 shrink-0 border border-white/10">

@@ -109,6 +109,13 @@ function App() {
     }
   };
 
+  const handleRestart = () => {
+    handleSeek(0);
+    if (playbackState !== 'PLAYING' && playbackState !== 'BUFFERING') {
+      requestPlay();
+    }
+  };
+
   // Handle Auto-Fit
   const performGridOptimization = useCallback((currentAspectRatio: number) => {
     const width = window.innerWidth;
@@ -328,6 +335,7 @@ function App() {
               currentTime={currentTime}
               duration={duration}
               onSeek={handleSeek}
+              onRestart={handleRestart}
               currentVideoSrc={videoSrc}
               currentVideoId={ytVideoId}
               gridConfig={gridConfig}

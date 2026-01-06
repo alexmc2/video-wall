@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+import { forwardRef, useEffect } from 'react';
 
 interface VideoTileProps {
   src: string;
@@ -33,6 +33,19 @@ export const VideoTile = forwardRef<HTMLVideoElement, VideoTileProps>(
         // Maybe signal ready immediately?
       }
     };
+
+    // Check ready state immediately when shouldBuffer changes
+    // This allows resuming without waiting for an event if already ready
+    useEffect(() => {
+      const videoRef = ref as React.MutableRefObject<HTMLVideoElement | null>;
+      if (
+        shouldBuffer &&
+        videoRef?.current &&
+        videoRef.current.readyState >= 3
+      ) {
+        if (onReady) onReady();
+      }
+    }, [shouldBuffer, onReady, ref]);
 
     return (
       <div className="w-full h-full relative overflow-hidden border border-black pointer-events-none">
