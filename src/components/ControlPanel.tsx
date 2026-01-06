@@ -630,7 +630,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                 onChange={(e) => onSyncGapChange(parseInt(e.target.value))}
                 className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-accent-green"
               />
-              <p className="text-[10px] text-text-dim">
+              <p className="text-xs text-text-dim">
                 Set a delay between tiles for a ripple effect. 0ms = Perfect
                 Sync.
               </p>

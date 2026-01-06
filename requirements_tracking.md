@@ -47,14 +47,14 @@
 
 ## 5. Play Control
 
-| ID  | Role     | Feature                                                                                                                                            | Benefit                                                                                                          | Priority | Status     | Notes                                             |
-| :-- | :------- | :------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------- | :------- | :--------- | :------------------------------------------------ |
-| 5.1 | Operator | Play the next video in the playlist automatically after the previous one or manually                                                               | I can control when the next video starts                                                                         | High     | ✅ Done    | Auto-advances when video ends.                    |
-| 5.2 | Operator | Pause, restart or skip forward the currently playing video                                                                                         | I can control when the video is playing or move quickly forwards in the play list                                | Medium   | ⚠️ Partial | Pause/Play works. Skip/Restart not fully exposed. |
-| 5.3 | Operator | Play the videos synchronously on the wall, i.e. all video images are in perfect synch with 0ms delay between each one based on settings            | I can achieve interesting video effects from the synchronous playing                                             | High     | ✅ Done    | Sync engine implemented for this specific goal.   |
-| 5.4 | Operator | Play each video on the wall with predefined asynchronous gaps between each successive video (gaps to be between 100ms and 500ms) based on settings | I can achieve interesting video effects from asynchronous playing                                                | High     | 🔴 To Do   |                                                   |
-| 5.5 | Operator | Be able to crop the video on the vertical edges                                                                                                    | Crop any black vertical bands that might be either side of the video, e.g. if created for older CRT televisions. | Medium   | 🔴 To Do   |                                                   |
-| 5.5 | Operator | Be able to crop the video on the horizontal edges                                                                                                  | Crop any black horizontal bands that might be above.below the video, e.g. if created in 16:9 format.             | Medium   | 🔴 To Do   |                                                   |
+| ID  | Role     | Feature                                                                                                                                            | Benefit                                                                                                          | Priority | Status     | Notes                                              |
+| :-- | :------- | :------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------- | :------- | :--------- | :------------------------------------------------- |
+| 5.1 | Operator | Play the next video in the playlist automatically after the previous one or manually                                                               | I can control when the next video starts                                                                         | High     | ✅ Done    | Auto-advances when video ends.                     |
+| 5.2 | Operator | Pause, restart or skip forward the currently playing video                                                                                         | I can control when the video is playing or move quickly forwards in the play list                                | Medium   | ✅ Done    | Pause/Play, Restart, and 'Play Next' available.    |
+| 5.3 | Operator | Play the videos synchronously on the wall, i.e. all video images are in perfect synch with 0ms delay between each one based on settings            | I can achieve interesting video effects from the synchronous playing                                             | High     | ✅ Done    | Sync engine implemented for this specific goal.    |
+| 5.4 | Operator | Play each video on the wall with predefined asynchronous gaps between each successive video (gaps to be between 100ms and 500ms) based on settings | I can achieve interesting video effects from asynchronous playing                                                | High     | ✅ Done    | Sync Gap slider (0-500ms) implemented.             |
+| 5.5 | Operator | Be able to crop the video on the vertical edges                                                                                                    | Crop any black vertical bands that might be either side of the video, e.g. if created for older CRT televisions. | Medium   | ⚠️ Partial | Scale X/Y sliders allow zooming/cropping behavior. |
+| 5.5 | Operator | Be able to crop the video on the horizontal edges                                                                                                  | Crop any black horizontal bands that might be above.below the video, e.g. if created in 16:9 format.             | Medium   | ⚠️ Partial | Scale X/Y sliders allow zooming/cropping behavior. |
 
 ## 6. Play History
 
@@ -80,7 +80,7 @@
 ### Implementation Progress Summary
 
 - **Core Sync Engine**: ✅ Implemented for both Local and YouTube.
-- **Basic Playback**: ✅ Implemented.
+- **Basic Playback**: ✅ Implemented (Play/Pause, Seek, Restart, Sync Gap).
 - **Control Interface**: ✅ Sidebar implemented with Accordions.
 - **Play Queue System**: ✅ Fully Implemented (Mixed sources, DnD, Persistence).
-- **Configuration/Refinement**: 🔴 Mostly missing (Grid size, Borders, Fades).
+- **Configuration/Refinement**: ⚠️ Scaling added, but specific Borders/Fades missing.
