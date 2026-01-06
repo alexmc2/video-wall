@@ -202,13 +202,13 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   return (
     <div className="p-6 flex flex-col gap-6">
       <div className="sticky top-0 z-50 bg-[#121827] -mx-6 -mt-6 px-6 py-4 flex justify-between items-center border-b border-border-color shadow-sm">
-        <h2 className="m-0 text-xl font-bold text-white tracking-wider">
+        <h2 className="m-0 text-xl font-bold text-sky-400 tracking-wider">
           SYNCHRONISER
         </h2>
         {onCollapse && (
           <button
             onClick={onCollapse}
-            className="p-1 text-gray-400 hover:text-white transition-colors"
+            className="p-1 text-gray-100 hover:text-white transition-colors bg-sky-500 rounded"
             title="Collapse Sidebar"
           >
             <svg
@@ -228,11 +228,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
         )}
       </div>
 
-      <Accordion
-        type="multiple"
-        defaultValue={['source', 'playback']}
-        className="w-full"
-      >
+      <Accordion type="multiple" defaultValue={[]} className="w-full">
         {/* SOURCE */}
         <AccordionItem value="source">
           <AccordionTrigger>VIDEO SOURCE</AccordionTrigger>
@@ -241,7 +237,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               <button
                 className={`flex-1 py-2 text-sm font-bold transition-colors ${
                   sourceMode === 'local'
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-sky-600 text-white'
                     : 'text-gray-400 hover:bg-gray-700'
                 }`}
                 onClick={() => onModeChange('local')}
@@ -330,7 +326,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                 }
                 className={`w-full py-3 border-none rounded-md font-bold cursor-pointer text-white transition-colors text-base ${
                   audioSource !== null
-                    ? 'bg-blue-600 hover:bg-blue-700'
+                    ? 'bg-sky-600 hover:bg-sky-700'
                     : 'bg-gray-700 hover:bg-gray-600'
                 }`}
               >
@@ -372,7 +368,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
 
                   {/* Info & Time */}
                   <div className="flex-1 flex flex-col gap-1 min-w-0">
-                    <span className="text-xs font-mono text-accent-blue font-bold truncate">
+                    <span className="text-xs font-mono text-sky-500 font-bold truncate">
                       {currentlyPlaying?.name ||
                         (sourceMode === 'youtube'
                           ? 'YouTube Stream'
@@ -453,7 +449,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                       gridConfig.rows === 2 &&
                       gridConfig.cols === 2 &&
                       !gridConfig.isAutoFit
-                        ? 'bg-accent-blue border-transparent text-white'
+                        ? 'bg-sky-500 border-transparent text-white'
                         : 'border-gray-600 text-gray-400 hover:border-gray-400'
                     }`}
                   >
@@ -472,7 +468,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                       gridConfig.rows === 3 &&
                       gridConfig.cols === 4 &&
                       !gridConfig.isAutoFit
-                        ? 'bg-accent-blue border-transparent text-white'
+                        ? 'bg-sky-500 border-transparent text-white'
                         : 'border-gray-600 text-gray-400 hover:border-gray-400'
                     }`}
                   >
@@ -491,7 +487,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                       gridConfig.rows === 4 &&
                       gridConfig.cols === 6 &&
                       !gridConfig.isAutoFit
-                        ? 'bg-accent-blue border-transparent text-white'
+                        ? 'bg-sky-500 border-transparent text-white'
                         : 'border-gray-600 text-gray-400 hover:border-gray-400'
                     }`}
                   >
@@ -515,7 +511,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                         isAutoFit: e.target.checked,
                       })
                     }
-                    className="accent-accent-blue"
+                    className="accent-sky-500"
                   />
                 </div>
                 {gridConfig.isAutoFit && (
@@ -535,7 +531,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                     />
                     <button
                       onClick={onOptimizeGrid}
-                      className="flex-1 bg-accent-blue text-white text-xs py-1 rounded hover:bg-blue-600"
+                      className="flex-1 bg-sky-500 text-white text-xs py-1 rounded hover:bg-sky-600"
                     >
                       Refit
                     </button>
@@ -565,7 +561,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                     step="0.05"
                     value={scaleX}
                     onChange={(e) => onScaleXChange(parseFloat(e.target.value))}
-                    className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-accent-blue"
+                    className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-sky-500"
                   />
                 </div>
 
@@ -583,7 +579,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                     step="0.05"
                     value={scaleY}
                     onChange={(e) => onScaleYChange(parseFloat(e.target.value))}
-                    className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-accent-blue"
+                    className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-sky-500"
                   />
                 </div>
               </div>
@@ -600,7 +596,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               <button
                 onClick={() => onToggleSync(!isSyncActive)}
                 className={`relative w-12 h-6 rounded-full border-none cursor-pointer transition-colors ${
-                  isSyncActive ? 'bg-accent-blue' : 'bg-gray-600'
+                  isSyncActive ? 'bg-sky-500' : 'bg-gray-600'
                 }`}
               >
                 <span
@@ -664,7 +660,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                       nameInput.value = '';
                     }
                   }}
-                  className="bg-accent-blue text-white border-none px-3 rounded cursor-pointer font-bold text-xs hover:bg-blue-600"
+                  className="bg-sky-500 text-white border-none px-3 rounded cursor-pointer font-bold text-xs hover:bg-sky-600"
                 >
                   SAVE
                 </button>

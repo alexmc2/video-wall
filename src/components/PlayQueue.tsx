@@ -138,7 +138,7 @@ export const PlayQueue: React.FC<PlayQueueProps> = ({
                 className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${
                   currentlyPlaying.type === 'youtube'
                     ? 'bg-red-600 text-white'
-                    : 'bg-blue-600 text-white'
+                    : 'bg-sky-600 text-white'
                 }`}
               >
                 {currentlyPlaying.type === 'youtube' ? 'YT' : 'LOCAL'}
@@ -167,7 +167,7 @@ export const PlayQueue: React.FC<PlayQueueProps> = ({
               onClick={() => setAddType('local')}
               className={`text-[10px] px-2 py-0.5 rounded font-bold transition-colors ${
                 addType === 'local'
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-sky-600 text-white'
                   : 'text-gray-400 hover:text-white'
               }`}
             >
@@ -242,7 +242,7 @@ export const PlayQueue: React.FC<PlayQueueProps> = ({
             <button
               onClick={() => onToggleLoopQueue(!loopQueue)}
               className={`relative w-10 h-5 rounded-full border-none cursor-pointer transition-colors ${
-                loopQueue ? 'bg-accent-blue' : 'bg-gray-600'
+                loopQueue ? 'bg-sky-500' : 'bg-gray-600'
               }`}
             >
               <span
@@ -303,7 +303,7 @@ export const PlayQueue: React.FC<PlayQueueProps> = ({
                   className={`text-[10px] px-1.5 py-0.5 rounded font-bold shrink-0 ${
                     item.type === 'youtube'
                       ? 'bg-red-600 text-white'
-                      : 'bg-blue-600 text-white'
+                      : 'bg-sky-600 text-white'
                   }`}
                 >
                   {item.type === 'youtube' ? 'YT' : 'LOCAL'}

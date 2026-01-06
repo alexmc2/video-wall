@@ -8,7 +8,7 @@ export default {
         'bg-panel': '#1e1e1e',
         'text-main': '#e0e0e0',
         'text-dim': '#a0a0a0',
-        'accent-blue': '#3b82f6',
+        'accent-sky': '#0ea5e9',
         'accent-green': '#22c55e',
         'accent-red': '#ef4444',
         'border-color': '#333',
