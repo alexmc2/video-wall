@@ -10,6 +10,7 @@ export interface UsePlayQueueReturn {
   removeFromQueue: (id: string) => void;
   moveUp: (id: string) => void;
   moveDown: (id: string) => void;
+  reorderQueue: (fromIndex: number, toIndex: number) => void;
   playNext: () => QueueItem | null;
   playCurrent: () => void;
   clearCurrent: () => void;
@@ -72,6 +73,25 @@ export const usePlayQueue = (): UsePlayQueueReturn => {
     });
   }, []);
 
+  const reorderQueue = useCallback((fromIndex: number, toIndex: number) => {
+    setQueue((prev) => {
+      if (
+        fromIndex < 0 ||
+        fromIndex >= prev.length ||
+        toIndex < 0 ||
+        toIndex >= prev.length ||
+        fromIndex === toIndex
+      ) {
+        return prev;
+      }
+
+      const newQueue = [...prev];
+      const [movedItem] = newQueue.splice(fromIndex, 1);
+      newQueue.splice(toIndex, 0, movedItem);
+      return newQueue;
+    });
+  }, []);
+
   const playNext = useCallback((): QueueItem | null => {
     if (queue.length === 0) return null;
 
@@ -96,6 +116,7 @@ export const usePlayQueue = (): UsePlayQueueReturn => {
     removeFromQueue,
     moveUp,
     moveDown,
+    reorderQueue,
     playNext,
     playCurrent,
     clearCurrent,

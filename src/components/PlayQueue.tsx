@@ -4,26 +4,39 @@ import type { QueueItem } from '../types';
 interface PlayQueueProps {
   queue: QueueItem[];
   currentlyPlaying: QueueItem | null;
-  sourceMode: 'local' | 'youtube';
+  // sourceMode prop is no longer strictly needed for input type,
+  // but might be useful? We'll ignore it for Add config as we have a toggle now.
   onAddToQueue: (item: Omit<QueueItem, 'id' | 'addedAt'>) => boolean;
   onRemoveFromQueue: (id: string) => void;
   onMoveUp: (id: string) => void;
   onMoveDown: (id: string) => void;
+  onReorderQueue: (fromIndex: number, toIndex: number) => void;
   onPlayNext: () => void;
+  // Playback Options
+  autoAdvance: boolean;
+  onToggleAutoAdvance: (enabled: boolean) => void;
+  loopQueue: boolean;
+  onToggleLoopQueue: (enabled: boolean) => void;
 }
 
 export const PlayQueue: React.FC<PlayQueueProps> = ({
   queue,
   currentlyPlaying,
-  sourceMode,
   onAddToQueue,
   onRemoveFromQueue,
   onMoveUp,
   onMoveDown,
+  onReorderQueue,
   onPlayNext,
+  autoAdvance,
+  onToggleAutoAdvance,
+  loopQueue,
+  onToggleLoopQueue,
 }) => {
   const [ytInput, setYtInput] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [addType, setAddType] = useState<'local' | 'youtube'>('local');
+  const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAddYouTube = () => {
@@ -85,6 +98,32 @@ export const PlayQueue: React.FC<PlayQueueProps> = ({
     }
   };
 
+  // Drag and Drop Handlers
+  const handleDragStart = (e: React.DragEvent, id: string) => {
+    setDraggedItemId(id);
+    e.dataTransfer.effectAllowed = 'move';
+    // Transparent drag image or just default
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault(); // Necessary to allow dropping
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    if (!draggedItemId || draggedItemId === targetId) return;
+
+    // Find indices
+    const originalIndex = queue.findIndex((item) => item.id === draggedItemId);
+    const targetIndex = queue.findIndex((item) => item.id === targetId);
+
+    if (originalIndex === -1 || targetIndex === -1) return;
+
+    onReorderQueue(originalIndex, targetIndex);
+    setDraggedItemId(null);
+  };
+
   return (
     <div className="flex flex-col gap-4">
       {/* Now Playing */}
@@ -118,11 +157,36 @@ export const PlayQueue: React.FC<PlayQueueProps> = ({
 
       {/* Add to Queue */}
       <div className="flex flex-col gap-2">
-        <label className="text-xs uppercase tracking-wider text-text-dim font-semibold">
-          Add to Queue
-        </label>
+        <div className="flex justify-between items-center">
+          <label className="text-xs uppercase tracking-wider text-text-dim font-semibold">
+            Add to Queue
+          </label>
+          {/* Type Toggle */}
+          <div className="flex bg-gray-700 rounded p-0.5">
+            <button
+              onClick={() => setAddType('local')}
+              className={`text-[10px] px-2 py-0.5 rounded font-bold transition-colors ${
+                addType === 'local'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              LOCAL
+            </button>
+            <button
+              onClick={() => setAddType('youtube')}
+              className={`text-[10px] px-2 py-0.5 rounded font-bold transition-colors ${
+                addType === 'youtube'
+                  ? 'bg-red-600 text-white'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              YT
+            </button>
+          </div>
+        </div>
 
-        {sourceMode === 'youtube' ? (
+        {addType === 'youtube' ? (
           <div className="flex gap-2">
             <input
               type="text"
@@ -154,6 +218,43 @@ export const PlayQueue: React.FC<PlayQueueProps> = ({
         {error && <span className="text-xs text-red-400">{error}</span>}
       </div>
 
+      {/* Queue Options */}
+      <div className="flex justify-between items-center text-xs text-text-dim px-1">
+        <div className="flex items-center gap-2">
+          <span className="font-semibold text-white">Autoplay</span>
+          <button
+            onClick={() => onToggleAutoAdvance(!autoAdvance)}
+            className={`relative w-10 h-5 rounded-full border-none cursor-pointer transition-colors ${
+              autoAdvance ? 'bg-accent-green' : 'bg-gray-600'
+            }`}
+          >
+            <span
+              className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform shadow-md ${
+                autoAdvance ? 'translate-x-5' : ''
+              }`}
+            />
+          </button>
+        </div>
+
+        {autoAdvance && (
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-white">Loop Queue</span>
+            <button
+              onClick={() => onToggleLoopQueue(!loopQueue)}
+              className={`relative w-10 h-5 rounded-full border-none cursor-pointer transition-colors ${
+                loopQueue ? 'bg-accent-blue' : 'bg-gray-600'
+              }`}
+            >
+              <span
+                className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform shadow-md ${
+                  loopQueue ? 'translate-x-5' : ''
+                }`}
+              />
+            </button>
+          </div>
+        )}
+      </div>
+
       {/* Queue List */}
       <div className="flex flex-col gap-2">
         <div className="flex justify-between items-center">
@@ -170,7 +271,10 @@ export const PlayQueue: React.FC<PlayQueueProps> = ({
           )}
         </div>
 
-        <div className="flex flex-col gap-1 max-h-48 overflow-y-auto">
+        <div
+          className="flex flex-col gap-1 max-h-48 overflow-y-auto"
+          onDragOver={handleDragOver}
+        >
           {queue.length === 0 ? (
             <span className="text-xs text-text-dim italic p-2">
               Queue is empty. Add videos above.
@@ -179,7 +283,15 @@ export const PlayQueue: React.FC<PlayQueueProps> = ({
             queue.map((item, index) => (
               <div
                 key={item.id}
-                className="flex items-center gap-2 bg-gray-800 p-2 rounded hover:bg-gray-700 group"
+                draggable
+                onDragStart={(e) => handleDragStart(e, item.id)}
+                onDrop={(e) => handleDrop(e, item.id)}
+                onDragOver={handleDragOver}
+                className={`flex items-center gap-2 bg-gray-800 p-2 rounded hover:bg-gray-700 group cursor-move ${
+                  draggedItemId === item.id
+                    ? 'opacity-50 border border-dashed border-gray-500'
+                    : ''
+                }`}
               >
                 {/* Position */}
                 <span className="text-xs text-text-dim w-5 text-center">
@@ -198,7 +310,7 @@ export const PlayQueue: React.FC<PlayQueueProps> = ({
                 </span>
 
                 {/* Name */}
-                <span className="text-xs text-white truncate flex-1 min-w-0">
+                <span className="text-xs text-white truncate flex-1 min-w-0 pointer-events-none">
                   {item.name}
                 </span>
 

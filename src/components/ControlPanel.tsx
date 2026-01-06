@@ -51,7 +51,13 @@ interface ControlPanelProps {
   onRemoveFromQueue: (id: string) => void;
   onMoveUp: (id: string) => void;
   onMoveDown: (id: string) => void;
+  onReorderQueue: (fromIndex: number, toIndex: number) => void;
   onPlayNext: () => void;
+  // Playback Options
+  autoAdvance: boolean;
+  onToggleAutoAdvance: (enabled: boolean) => void;
+  loopQueue: boolean;
+  onToggleLoopQueue: (enabled: boolean) => void;
 }
 
 interface SavedPreset {
@@ -85,7 +91,12 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   onRemoveFromQueue,
   onMoveUp,
   onMoveDown,
+  onReorderQueue,
   onPlayNext,
+  autoAdvance,
+  onToggleAutoAdvance,
+  loopQueue,
+  onToggleLoopQueue,
 }) => {
   const [ytInput, setYtInput] = useState('5IsSpAOD6K8');
 
@@ -274,6 +285,27 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           </AccordionContent>
         </AccordionItem>
 
+        {/* PLAY QUEUE */}
+        <AccordionItem value="queue">
+          <AccordionTrigger>PLAY QUEUE</AccordionTrigger>
+          <AccordionContent>
+            <PlayQueue
+              queue={queue}
+              currentlyPlaying={currentlyPlaying}
+              onAddToQueue={onAddToQueue}
+              onRemoveFromQueue={onRemoveFromQueue}
+              onMoveUp={onMoveUp}
+              onMoveDown={onMoveDown}
+              onReorderQueue={onReorderQueue}
+              onPlayNext={onPlayNext}
+              autoAdvance={autoAdvance}
+              onToggleAutoAdvance={onToggleAutoAdvance}
+              loopQueue={loopQueue}
+              onToggleLoopQueue={onToggleLoopQueue}
+            />
+          </AccordionContent>
+        </AccordionItem>
+
         {/* LAYOUT / GRID */}
         <AccordionItem value="layout">
           <AccordionTrigger>GRID CONFIGURATION</AccordionTrigger>
@@ -405,23 +437,6 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                 />
               </div>
             </div>
-          </AccordionContent>
-        </AccordionItem>
-
-        {/* PLAY QUEUE */}
-        <AccordionItem value="queue">
-          <AccordionTrigger>PLAY QUEUE</AccordionTrigger>
-          <AccordionContent>
-            <PlayQueue
-              queue={queue}
-              currentlyPlaying={currentlyPlaying}
-              sourceMode={sourceMode}
-              onAddToQueue={onAddToQueue}
-              onRemoveFromQueue={onRemoveFromQueue}
-              onMoveUp={onMoveUp}
-              onMoveDown={onMoveDown}
-              onPlayNext={onPlayNext}
-            />
           </AccordionContent>
         </AccordionItem>
 

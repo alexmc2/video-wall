@@ -30,11 +30,19 @@ interface YouTubeTileProps {
   shouldBuffer?: boolean;
   muted?: boolean;
   scale?: number;
+  onEnded?: () => void;
 }
 
 export const YouTubeTile = forwardRef<YouTubePlayer | null, YouTubeTileProps>(
   (props, ref) => {
-    const { videoId, onPlayerReady, onReady, shouldBuffer, scale = 1 } = props;
+    const {
+      videoId,
+      onPlayerReady,
+      onReady,
+      shouldBuffer,
+      scale = 1,
+      onEnded,
+    } = props;
     const containerRef = useRef<HTMLDivElement>(null);
     const playerRef = useRef<YouTubePlayer | null>(null);
 
@@ -89,6 +97,7 @@ export const YouTubeTile = forwardRef<YouTubePlayer | null, YouTubeTileProps>(
     // Refs for props to avoid re-init deps
     const onPlayerReadyRef = useRef(onPlayerReady);
     const onReadyRef = useRef(onReady);
+    const onEndedRef = useRef(onEnded);
     const shouldBufferRef = useRef(shouldBuffer);
 
     useEffect(() => {
@@ -98,6 +107,10 @@ export const YouTubeTile = forwardRef<YouTubePlayer | null, YouTubeTileProps>(
     useEffect(() => {
       onReadyRef.current = onReady;
     }, [onReady]);
+
+    useEffect(() => {
+      onEndedRef.current = onEnded;
+    }, [onEnded]);
 
     useEffect(() => {
       shouldBufferRef.current = shouldBuffer;
@@ -173,6 +186,11 @@ export const YouTubeTile = forwardRef<YouTubePlayer | null, YouTubeTileProps>(
                   playerRef.current.seekTo(0, true);
                 if (onReadyRef.current) onReadyRef.current();
               }
+            }
+
+            // State 0 = Ended
+            if (event.data === 0) {
+              if (onEndedRef.current) onEndedRef.current();
             }
           },
           // eslint-disable-next-line @typescript-eslint/no-explicit-any

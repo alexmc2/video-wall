@@ -6,10 +6,11 @@ interface VideoTileProps {
   onReady?: () => void;
   shouldBuffer?: boolean;
   scale?: number;
+  onEnded?: () => void;
 }
 
 export const VideoTile = forwardRef<HTMLVideoElement, VideoTileProps>(
-  ({ src, muted = true, onReady, shouldBuffer, scale = 1 }, ref) => {
+  ({ src, muted = true, onReady, shouldBuffer, scale = 1, onEnded }, ref) => {
     // Handling local video buffering readiness
     const handleCanPlay = () => {
       // For local video, we might consider 'canplaythrough' as enough.
@@ -43,6 +44,7 @@ export const VideoTile = forwardRef<HTMLVideoElement, VideoTileProps>(
             playsInline
             loop
             onCanPlayThrough={handleCanPlay}
+            onEnded={onEnded}
           />
         </div>
       </div>

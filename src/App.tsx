@@ -27,6 +27,10 @@ function App() {
   const [audioSource, setAudioSource] = useState<number | null>(null); // null = all muted, number = index
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
+  // Playback Options
+  const [autoAdvance, setAutoAdvance] = useState(true);
+  const [loopQueue, setLoopQueue] = useState(false);
+
   // Grid Config State
   const [gridConfig, setGridConfig] = useState<GridConfig>({
     rows: 2,
@@ -55,6 +59,7 @@ function App() {
     removeFromQueue,
     moveUp,
     moveDown,
+    reorderQueue,
     playNext,
   } = usePlayQueue();
 
@@ -156,19 +161,49 @@ function App() {
   };
 
   // Handle playing next video from queue
-  const handlePlayNext = useCallback(() => {
-    const nextItem = playNext();
-    if (!nextItem) return;
+  const handleVideoEnded = useCallback(() => {
+    if (!autoAdvance) return;
 
-    // Switch mode and load video based on type
-    if (nextItem.type === 'local') {
-      setSourceMode('local');
-      setVideoSrc(nextItem.source);
-    } else {
-      setSourceMode('youtube');
-      setYtVideoId(nextItem.source);
+    // Play next item
+    const nextItem = playNext();
+
+    if (nextItem) {
+      // If Looping is enabled, add it back to the end of the queue
+      if (loopQueue) {
+        addToQueue({
+          type: nextItem.type,
+          name: nextItem.name,
+          source: nextItem.source,
+        });
+      }
+
+      if (nextItem.type === 'local') {
+        setSourceMode('local');
+        setVideoSrc(nextItem.source);
+      } else {
+        setSourceMode('youtube');
+        setYtVideoId(nextItem.source);
+      }
     }
-  }, [playNext]);
+  }, [autoAdvance, loopQueue, playNext, addToQueue]);
+
+  // Determine loop behavior: Loop current if queue is empty AND autoAdvance is true?
+  // User asked: "if automatically, should they be looped".
+  // If queue is empty:
+  // - If loopQueue is true, we probably want to loop the current video (single loop behavior if queue empty)
+  // - OR we just stop.
+  // - But my previous logic was "Loop current if queue is empty".
+  // - Let's refine: If AutoAdvance + LoopQueue + QueueEmpty -> Loop current video?
+  // - Or does "Loop Queue" imply strictly the queue?
+  // - If I have 1 item in queue, it plays, re-adds to queue, then plays again. So it effectively loops.
+  // - If I have 0 items in queue and playing one, it's not in the queue.
+  // - So "Queue Empty" logic relies on standard looping.
+  // - I'll keep "shouldLoop = queue.length === 0" logic BUT conditionally on autoAdvance.
+  // - If autoAdvance is OFF, video should stop (no loop).
+  // - If autoAdvance is ON and Queue Empty:
+  //   - If loopQueue is ON -> Loop current? (Maybe).
+  //   - If loopQueue is OFF -> Stop.
+  const shouldLoopCurrent = autoAdvance && queue.length === 0 && loopQueue;
 
   return (
     <div className="flex flex-col md:flex-row h-screen w-screen bg-bg-dark text-text-main font-[Inter,system-ui,sans-serif] overflow-hidden relative">
@@ -251,7 +286,31 @@ function App() {
               onRemoveFromQueue={removeFromQueue}
               onMoveUp={moveUp}
               onMoveDown={moveDown}
-              onPlayNext={handlePlayNext}
+              onReorderQueue={reorderQueue}
+              onPlayNext={() => {
+                // Manual Play Next triggers standard logic (ignoring autoAdvance flag)
+                const nextItem = playNext();
+                if (nextItem) {
+                  if (loopQueue) {
+                    addToQueue({
+                      type: nextItem.type,
+                      name: nextItem.name,
+                      source: nextItem.source,
+                    });
+                  }
+                  if (nextItem.type === 'local') {
+                    setSourceMode('local');
+                    setVideoSrc(nextItem.source);
+                  } else {
+                    setSourceMode('youtube');
+                    setYtVideoId(nextItem.source);
+                  }
+                }
+              }}
+              autoAdvance={autoAdvance}
+              onToggleAutoAdvance={setAutoAdvance}
+              loopQueue={loopQueue}
+              onToggleLoopQueue={setLoopQueue}
             />
           </div>
         </div>
@@ -308,6 +367,12 @@ function App() {
                 shouldBuffer={playbackState === 'BUFFERING'}
                 onReady={() => signalReady(i)}
                 scale={zoomLevel}
+                // Only Master Tile triggers navigation
+                onEnded={i === 0 ? handleVideoEnded : undefined}
+                // Loop if queue is empty or explicit loop requested
+                {...(i === 0
+                  ? { loop: shouldLoopCurrent }
+                  : { loop: shouldLoopCurrent })}
               />
             ))
           : Array.from({ length: totalTiles }).map((_, i) => (
@@ -321,6 +386,15 @@ function App() {
                 shouldBuffer={playbackState === 'BUFFERING'}
                 onReady={() => signalReady(i)}
                 scale={zoomLevel}
+                onEnded={i === 0 ? handleVideoEnded : undefined}
+                // YouTube looping is handled via onEnded seeking if we want, or we can trust the component if we added loop prop support?
+                // We added onEnded. The YouTubeTile doesn't natively support "loop" prop for single video, but we can restart it manually.
+                // However, standard <video> 'loop' attribute handles it automatically.
+                // For YouTube, if we want loop, handleVideoEnded will be called (shouldLoop=true means queue empty).
+                // If queue empty, handleVideoEnded calls playNext -> returns null.
+                // We need to REPLAY current if null returned?
+                // Or better: pass a boolean to YouTubeTile to auto-seek-0 on end?
+                // Let's rely on handleVideoEnded restarting it if needed.
               />
             ))}
       </main>
