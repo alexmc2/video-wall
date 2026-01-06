@@ -49,7 +49,15 @@ function App() {
   // YouTube State
   const [ytVideoId, setYtVideoId] = useState<string>('5IsSpAOD6K8');
   const ytPlayerRefs = useRef<(YouTubePlayer | null)[]>([]);
-  const [zoomLevel, setZoomLevel] = useState(1);
+  // Scaling State
+  const [scaleX, setScaleX] = useState(1);
+  const [scaleY, setScaleY] = useState(1);
+  // Async Sync Gap (ms)
+  const [syncGap, setSyncGap] = useState(0);
+
+  // Time Tracking
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
 
   // Play Queue
   const {
@@ -65,6 +73,41 @@ function App() {
 
   // Load API
   useLoadYouTubeScript();
+
+  // Polling for Time Updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (sourceMode === 'local') {
+        const master = localVideoRefs.current[0];
+        if (master) {
+          setCurrentTime(master.currentTime);
+          setDuration(master.duration || 0);
+        }
+      } else {
+        const master = ytPlayerRefs.current[0];
+        if (master && master.getCurrentTime) {
+          setCurrentTime(master.getCurrentTime());
+          setDuration(master.getDuration ? master.getDuration() : 0);
+        }
+      }
+    }, 500);
+    return () => clearInterval(interval);
+  }, [sourceMode]);
+
+  const handleSeek = (time: number) => {
+    // Optimistic update
+    setCurrentTime(time);
+
+    if (sourceMode === 'local') {
+      localVideoRefs.current.forEach((v) => {
+        if (v) v.currentTime = time;
+      });
+    } else {
+      ytPlayerRefs.current.forEach((p) => {
+        if (p && p.seekTo) p.seekTo(time, true);
+      });
+    }
+  };
 
   // Handle Auto-Fit
   const performGridOptimization = useCallback((currentAspectRatio: number) => {
@@ -145,12 +188,14 @@ function App() {
     videosRef: localVideoRefs,
     isSyncEnabled: isSyncActive && sourceMode === 'local',
     isPlaying: playbackState === 'PLAYING' && sourceMode === 'local',
+    syncGap,
   });
 
   useYouTubeSync({
     playersRef: ytPlayerRefs,
     isSyncEnabled: isSyncActive && sourceMode === 'youtube',
     isPlaying: playbackState === 'PLAYING' && sourceMode === 'youtube',
+    syncGap,
   });
 
   const handleModeChange = (mode: SourceMode) => {
@@ -274,8 +319,17 @@ function App() {
               onTogglePlay={togglePlay}
               audioSource={audioSource}
               onAudioSourceChange={setAudioSource}
-              zoomLevel={zoomLevel}
-              onZoomChange={setZoomLevel}
+              scaleX={scaleX}
+              onScaleXChange={setScaleX}
+              scaleY={scaleY}
+              onScaleYChange={setScaleY}
+              syncGap={syncGap}
+              onSyncGapChange={setSyncGap}
+              currentTime={currentTime}
+              duration={duration}
+              onSeek={handleSeek}
+              currentVideoSrc={videoSrc}
+              currentVideoId={ytVideoId}
               gridConfig={gridConfig}
               onGridConfigChange={setGridConfig}
               onOptimizeGrid={optimizeGrid}
@@ -366,7 +420,8 @@ function App() {
                 muted={audioSource !== i}
                 shouldBuffer={playbackState === 'BUFFERING'}
                 onReady={() => signalReady(i)}
-                scale={zoomLevel}
+                scaleX={scaleX}
+                scaleY={scaleY}
                 // Only Master Tile triggers navigation
                 onEnded={i === 0 ? handleVideoEnded : undefined}
                 // Loop if queue is empty or explicit loop requested
@@ -385,7 +440,8 @@ function App() {
                 muted={audioSource !== i}
                 shouldBuffer={playbackState === 'BUFFERING'}
                 onReady={() => signalReady(i)}
-                scale={zoomLevel}
+                scaleX={scaleX}
+                scaleY={scaleY}
                 onEnded={i === 0 ? handleVideoEnded : undefined}
                 // YouTube looping is handled via onEnded seeking if we want, or we can trust the component if we added loop prop support?
                 // We added onEnded. The YouTubeTile doesn't natively support "loop" prop for single video, but we can restart it manually.

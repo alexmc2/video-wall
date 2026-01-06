@@ -35,9 +35,21 @@ interface ControlPanelProps {
   onTogglePlay: () => void;
   audioSource: number | null; // null = all muted
   onAudioSourceChange: (index: number | null) => void;
-  // YouTube Zoom
-  zoomLevel: number;
-  onZoomChange: (zoom: number) => void;
+  // Scaling
+  scaleX: number;
+  onScaleXChange: (val: number) => void;
+  scaleY: number;
+  onScaleYChange: (val: number) => void;
+  // Sync
+  syncGap: number;
+  onSyncGapChange: (val: number) => void;
+  // Time
+  currentTime: number;
+  duration: number;
+  onSeek: (time: number) => void;
+  // Preview Info
+  currentVideoSrc: string;
+  currentVideoId: string;
 
   // Grid Props
   gridConfig: GridConfig;
@@ -64,7 +76,9 @@ interface SavedPreset {
   gridConfig: GridConfig;
   sourceMode: SourceMode;
   ytInput: string;
-  zoomLevel: number;
+  scaleX: number;
+  scaleY: number;
+  syncGap: number;
   timestamp: number;
 }
 
@@ -79,8 +93,17 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   onTogglePlay,
   audioSource,
   onAudioSourceChange,
-  zoomLevel,
-  onZoomChange,
+  scaleX,
+  onScaleXChange,
+  scaleY,
+  onScaleYChange,
+  syncGap,
+  onSyncGapChange,
+  currentTime,
+  duration,
+  onSeek,
+  currentVideoSrc,
+  currentVideoId,
   gridConfig,
   onGridConfigChange,
   onOptimizeGrid,
@@ -118,7 +141,9 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
       gridConfig,
       sourceMode,
       ytInput,
-      zoomLevel,
+      scaleX,
+      scaleY,
+      syncGap,
       timestamp: Date.now(),
     };
     const updated = { ...savedPresets, [name]: newPreset };
@@ -136,7 +161,9 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
       setYtInput(preset.ytInput);
       onVideoIdChange(preset.ytInput);
     }
-    if (preset.zoomLevel) onZoomChange(preset.zoomLevel);
+    if (preset.scaleX) onScaleXChange(preset.scaleX);
+    if (preset.scaleY) onScaleYChange(preset.scaleY);
+    if (preset.syncGap) onSyncGapChange(preset.syncGap);
   };
 
   const handleDeletePreset = (name: string) => {
@@ -281,6 +308,66 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               >
                 {audioSource !== null ? 'MUTE AUDIO' : 'UNMUTE AUDIO'}
               </button>
+
+              {/* SCRUBBER & PREVIEW */}
+              <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-white/10">
+                <div className="flex justify-between items-center bg-black/40 p-2 rounded relative overflow-hidden group">
+                  {/* MINI PREVIEW */}
+                  <div className="w-24 h-14 bg-black rounded overflow-hidden mr-3 shrink-0 border border-white/10">
+                    {sourceMode === 'local' && currentVideoSrc ? (
+                      <video
+                        src={currentVideoSrc}
+                        className="w-full h-full object-cover opacity-80"
+                        muted
+                      />
+                    ) : sourceMode === 'youtube' && currentVideoId ? (
+                      // Just a thumbnail for YT to be safe on API limits
+                      <img
+                        src={`https://img.youtube.com/vi/${currentVideoId}/mqdefault.jpg`}
+                        alt="Preview"
+                        className="w-full h-full object-cover opacity-80"
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-[10px] text-gray-500">
+                        No Signal
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Info & Time */}
+                  <div className="flex-1 flex flex-col gap-1 min-w-0">
+                    <span className="text-xs font-mono text-accent-blue font-bold truncate">
+                      {currentlyPlaying?.name ||
+                        (sourceMode === 'youtube'
+                          ? 'YouTube Stream'
+                          : 'Local Video')}
+                    </span>
+                    <div className="flex justify-between text-[10px] text-text-dim font-mono">
+                      <span>
+                        {new Date(currentTime * 1000)
+                          .toISOString()
+                          .substr(14, 5)}
+                      </span>
+                      <span>
+                        {new Date((duration || 0) * 1000)
+                          .toISOString()
+                          .substr(14, 5)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* SLIDER */}
+                <input
+                  type="range"
+                  min="0"
+                  max={duration || 100}
+                  step="0.1"
+                  value={currentTime}
+                  onChange={(e) => onSeek(parseFloat(e.target.value))}
+                  className="w-full h-1 appearance-none bg-gray-600 rounded cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-red-600 [&::-webkit-slider-thumb]:hover:bg-red-500 [&::-webkit-slider-thumb]:transition-colors"
+                />
+              </div>
             </div>
           </AccordionContent>
         </AccordionItem>
@@ -420,21 +507,49 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                 )}
               </div>
 
-              {/* ZOOM (Only for YT really, but kept here) */}
+              {/* VIDEO CROPPING / SCALING */}
               <div className="flex flex-col gap-2 mt-2 pt-2 border-t border-white/10">
-                <label className="text-xs uppercase tracking-wider text-text-dim font-semibold flex justify-between">
-                  <span>Zoom / Crop</span>
-                  <span className="text-white">{zoomLevel.toFixed(1)}x</span>
+                <label className="text-xs uppercase tracking-wider text-text-dim font-semibold">
+                  Video Adjustment (Corp/Scale)
                 </label>
-                <input
-                  type="range"
-                  min="1"
-                  max="3"
-                  step="0.1"
-                  value={zoomLevel}
-                  onChange={(e) => onZoomChange(parseFloat(e.target.value))}
-                  className="w-full mt-1 accent-accent-red cursor-pointer"
-                />
+
+                <div className="flex flex-col gap-1">
+                  <div className="flex justify-between">
+                    <span className="text-xs text-text-dim">
+                      Horizontal (X)
+                    </span>
+                    <span className="text-xs text-white">
+                      {scaleX.toFixed(2)}x
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="1"
+                    max="3"
+                    step="0.05"
+                    value={scaleX}
+                    onChange={(e) => onScaleXChange(parseFloat(e.target.value))}
+                    className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-accent-blue"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <div className="flex justify-between">
+                    <span className="text-xs text-text-dim">Vertical (Y)</span>
+                    <span className="text-xs text-white">
+                      {scaleY.toFixed(2)}x
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="1"
+                    max="3"
+                    step="0.05"
+                    value={scaleY}
+                    onChange={(e) => onScaleYChange(parseFloat(e.target.value))}
+                    className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-accent-blue"
+                  />
+                </div>
               </div>
             </div>
           </AccordionContent>
@@ -463,6 +578,31 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               The sync engine continuously monitors all tiles and nudges
               playback to ensure zero-latency synchronization.
             </p>
+
+            {/* ASYNC GAP CONTROL */}
+            <div className="flex flex-col gap-2 mt-4 pt-2 border-t border-white/10">
+              <div className="flex justify-between items-center">
+                <label className="text-xs uppercase tracking-wider text-text-dim font-semibold">
+                  Async Playback Gap
+                </label>
+                <span className="text-xs text-white font-mono">
+                  {syncGap}ms
+                </span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="500"
+                step="50"
+                value={syncGap}
+                onChange={(e) => onSyncGapChange(parseInt(e.target.value))}
+                className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-accent-green"
+              />
+              <p className="text-[10px] text-text-dim">
+                Set a delay between tiles for a ripple effect. 0ms = Perfect
+                Sync.
+              </p>
+            </div>
           </AccordionContent>
         </AccordionItem>
 

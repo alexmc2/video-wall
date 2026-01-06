@@ -5,12 +5,24 @@ interface VideoTileProps {
   muted?: boolean;
   onReady?: () => void;
   shouldBuffer?: boolean;
-  scale?: number;
+  scaleX?: number;
+  scaleY?: number;
   onEnded?: () => void;
 }
 
 export const VideoTile = forwardRef<HTMLVideoElement, VideoTileProps>(
-  ({ src, muted = true, onReady, shouldBuffer, scale = 1, onEnded }, ref) => {
+  (
+    {
+      src,
+      muted = true,
+      onReady,
+      shouldBuffer,
+      scaleX = 1,
+      scaleY = 1,
+      onEnded,
+    },
+    ref
+  ) => {
     // Handling local video buffering readiness
     const handleCanPlay = () => {
       // For local video, we might consider 'canplaythrough' as enough.
@@ -23,11 +35,11 @@ export const VideoTile = forwardRef<HTMLVideoElement, VideoTileProps>(
     };
 
     return (
-      <div className="w-full h-full relative overflow-hidden border border-black">
+      <div className="w-full h-full relative overflow-hidden border border-black pointer-events-none">
         <div
           className="w-full h-full"
           style={{
-            transform: `scale(${scale})`,
+            transform: `scale(${scaleX}, ${scaleY})`,
             transformOrigin: 'center center',
             transition: 'transform 0.1s ease-out',
           }}

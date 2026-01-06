@@ -5,12 +5,14 @@ interface UseYouTubeSyncProps {
   playersRef: React.MutableRefObject<(YouTubePlayer | null)[]>;
   isSyncEnabled: boolean;
   isPlaying: boolean;
+  syncGap: number;
 }
 
 export const useYouTubeSync = ({
   playersRef,
   isSyncEnabled,
   isPlaying,
+  syncGap = 0,
 }: UseYouTubeSyncProps) => {
   const intervalRef = useRef<number>(0);
 
@@ -28,8 +30,11 @@ export const useYouTubeSync = ({
       if (index === 0) return; // Skip master
       if (!slave) return;
 
+      const delaySec = (syncGap * index) / 1000;
+      const targetTime = Math.max(0, masterTime - delaySec);
+
       const slaveTime = slave.getCurrentTime();
-      const drift = slaveTime - masterTime;
+      const drift = slaveTime - targetTime;
 
       // YouTube drift correction strategy
       // We can't set playbackRate arbitrarily float (like 1.02), only discrete [0.25, 0.5, 1, 1.5, 2] usually.
@@ -40,20 +45,14 @@ export const useYouTubeSync = ({
 
       if (Math.abs(drift) > HARD_THRESHOLD) {
         // Hard snap
-        // console.log(`Hard Seek Slave ${index}`, drift);
-        slave.seekTo(masterTime, true);
+        slave.seekTo(targetTime, true);
       } else if (Math.abs(drift) > THRESHOLD) {
         // Soft corrections are hard with discrete rates.
         // For now, we just seek if it's annoying.
-        // console.log(`Soft Seek Slave ${index}`, drift);
-
-        // Optional: If we want to try playbackRate, we check available rates.
-        // const rates = slave.getAvailablePlaybackRates();
-        // But usually seeking is cleaner for "keeping together" even if audio glitches.
-        slave.seekTo(masterTime, true);
+        slave.seekTo(targetTime, true);
       }
     });
-  }, [playersRef, isSyncEnabled]);
+  }, [playersRef, isSyncEnabled, syncGap]);
 
   // Sync Loop
   useEffect(() => {

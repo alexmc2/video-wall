@@ -9,6 +9,7 @@ export interface YouTubePlayer {
   getPlayerState(): number;
   mute(): void;
   unMute(): void;
+  getDuration(): number;
   destroy(): void;
 }
 
@@ -29,7 +30,8 @@ interface YouTubeTileProps {
   onReady?: () => void;
   shouldBuffer?: boolean;
   muted?: boolean;
-  scale?: number;
+  scaleX?: number;
+  scaleY?: number;
   onEnded?: () => void;
 }
 
@@ -40,7 +42,8 @@ export const YouTubeTile = forwardRef<YouTubePlayer | null, YouTubeTileProps>(
       onPlayerReady,
       onReady,
       shouldBuffer,
-      scale = 1,
+      scaleX = 1,
+      scaleY = 1,
       onEnded,
     } = props;
     const containerRef = useRef<HTMLDivElement>(null);
@@ -84,6 +87,11 @@ export const YouTubeTile = forwardRef<YouTubePlayer | null, YouTubeTileProps>(
           if (typeof playerRef.current?.unMute === 'function') {
             playerRef.current.unMute();
           }
+        },
+        getDuration: () => {
+          return typeof playerRef.current?.getDuration === 'function'
+            ? playerRef.current.getDuration()
+            : 0;
         },
         destroy: () => {
           if (typeof playerRef.current?.destroy === 'function') {
@@ -225,9 +233,16 @@ export const YouTubeTile = forwardRef<YouTubePlayer | null, YouTubeTileProps>(
     return (
       <div className="w-full h-full relative overflow-hidden border border-black">
         <div
+          className="absolute inset-0 z-10 bg-transparent"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+        />
+        <div
           className="w-full h-full"
           style={{
-            transform: `scale(${scale})`,
+            transform: `scale(${scaleX}, ${scaleY})`,
             transformOrigin: 'center center',
             transition: 'transform 0.1s ease-out',
           }}
