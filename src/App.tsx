@@ -289,7 +289,7 @@ function App() {
           fixed inset-y-0 left-0 z-40 bg-[#121827] border-r border-border-color flex flex-col transition-all duration-300 ease-in-out
           ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
           md:relative md:translate-x-0 overflow-hidden
-          w-[75%]
+          w-[90%]
           ${isSidebarOpen ? 'md:w-[320px]' : 'md:w-0 md:border-r-0'}
         `}
       >
