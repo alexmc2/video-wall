@@ -170,7 +170,7 @@ function App() {
       {/* Sidebar */}
       <aside
         className={`
-          fixed inset-y-0 left-0 z-40 bg-bg-panel border-r border-border-color flex flex-col transition-all duration-300 ease-in-out
+          fixed inset-y-0 left-0 z-40 bg-[#121827] border-r border-border-color flex flex-col transition-all duration-300 ease-in-out
           ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
           md:relative md:translate-x-0 overflow-hidden
           ${isSidebarOpen ? 'md:w-[320px]' : 'md:w-0 md:border-r-0'}
@@ -234,7 +234,7 @@ function App() {
       {!isSidebarOpen && (
         <button
           onClick={() => setIsSidebarOpen(true)}
-          className="hidden md:flex absolute top-4 left-4 z-50 p-2 bg-bg-panel border border-border-color text-white rounded hover:bg-gray-700 transition-colors shadow-lg"
+          className="hidden md:flex absolute top-4 left-4 z-50 p-2 bg-#121827] border border-border-color text-white rounded hover:bg-gray-700 transition-colors shadow-lg"
           title="Expand Sidebar"
         >
           <svg

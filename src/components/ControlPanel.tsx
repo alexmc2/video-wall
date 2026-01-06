@@ -199,12 +199,12 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                     type="text"
                     value={ytInput}
                     onChange={(e) => setYtInput(e.target.value)}
-                    className="flex-1 bg-[#333] border border-[#444] text-white p-2 rounded text-sm"
+                    className="flex-1 bg-slate-700 border border-slate-600 text-white p-2 rounded text-sm focus:outline-none"
                     placeholder="ID or URL"
                   />
                   <button
                     onClick={handleYtLoad}
-                    className="bg-[#444] text-white border-none px-4 rounded cursor-pointer font-bold text-xs hover:bg-[#555]"
+                    className="bg-slate-700 text-white border-none px-4 rounded cursor-pointer font-bold text-xs hover:bg-[#555]"
                   >
                     LOAD
                   </button>
@@ -425,7 +425,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                   type="text"
                   placeholder="Config Name (e.g. Morning News)"
                   id="preset-name-input"
-                  className="flex-1 bg-[#333] border border-[#444] text-white p-2 rounded text-xs focus:outline-none focus:border-accent-blue focus:ring-1 focus:ring-accent-blue"
+                  className="flex-1 bg-slate-700 border border-slate-600 text-white p-2 rounded text-xs focus:outline-none"
                 />
                 <button
                   onClick={() => {
