@@ -7,6 +7,7 @@ import type { SourceMode, GridConfig } from './components/ControlPanel';
 import { useLocalSync } from './hooks/useLocalSync';
 import { useYouTubeSync } from './hooks/useYouTubeSync';
 import { useDirector } from './hooks/useDirector';
+import { usePlayQueue } from './hooks/usePlayQueue';
 
 // Helper to load YT Script once
 const useLoadYouTubeScript = () => {
@@ -45,6 +46,17 @@ function App() {
   const [ytVideoId, setYtVideoId] = useState<string>('5IsSpAOD6K8');
   const ytPlayerRefs = useRef<(YouTubePlayer | null)[]>([]);
   const [zoomLevel, setZoomLevel] = useState(1);
+
+  // Play Queue
+  const {
+    queue,
+    currentlyPlaying,
+    addToQueue,
+    removeFromQueue,
+    moveUp,
+    moveDown,
+    playNext,
+  } = usePlayQueue();
 
   // Load API
   useLoadYouTubeScript();
@@ -143,6 +155,21 @@ function App() {
     setAudioSource(null); // Reset audio on mode switch
   };
 
+  // Handle playing next video from queue
+  const handlePlayNext = useCallback(() => {
+    const nextItem = playNext();
+    if (!nextItem) return;
+
+    // Switch mode and load video based on type
+    if (nextItem.type === 'local') {
+      setSourceMode('local');
+      setVideoSrc(nextItem.source);
+    } else {
+      setSourceMode('youtube');
+      setYtVideoId(nextItem.source);
+    }
+  }, [playNext]);
+
   return (
     <div className="flex flex-col md:flex-row h-screen w-screen bg-bg-dark text-text-main font-[Inter,system-ui,sans-serif] overflow-hidden relative">
       {/* Mobile Header / Toggle Button Overlay */}
@@ -217,6 +244,14 @@ function App() {
               gridConfig={gridConfig}
               onGridConfigChange={setGridConfig}
               onOptimizeGrid={optimizeGrid}
+              // Queue props
+              queue={queue}
+              currentlyPlaying={currentlyPlaying}
+              onAddToQueue={addToQueue}
+              onRemoveFromQueue={removeFromQueue}
+              onMoveUp={moveUp}
+              onMoveDown={moveDown}
+              onPlayNext={handlePlayNext}
             />
           </div>
         </div>

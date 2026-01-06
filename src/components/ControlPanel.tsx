@@ -5,6 +5,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from './ui/accordion';
+import { PlayQueue } from './PlayQueue';
+import type { QueueItem } from '../types';
 
 export type SourceMode = 'local' | 'youtube';
 
@@ -41,6 +43,15 @@ interface ControlPanelProps {
   gridConfig: GridConfig;
   onGridConfigChange: (config: GridConfig) => void;
   onOptimizeGrid: () => void; // Manually trigger optimization
+
+  // Queue Props
+  queue: QueueItem[];
+  currentlyPlaying: QueueItem | null;
+  onAddToQueue: (item: Omit<QueueItem, 'id' | 'addedAt'>) => boolean;
+  onRemoveFromQueue: (id: string) => void;
+  onMoveUp: (id: string) => void;
+  onMoveDown: (id: string) => void;
+  onPlayNext: () => void;
 }
 
 interface SavedPreset {
@@ -67,6 +78,14 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   gridConfig,
   onGridConfigChange,
   onOptimizeGrid,
+  // Queue
+  queue,
+  currentlyPlaying,
+  onAddToQueue,
+  onRemoveFromQueue,
+  onMoveUp,
+  onMoveDown,
+  onPlayNext,
 }) => {
   const [ytInput, setYtInput] = useState('5IsSpAOD6K8');
 
@@ -386,6 +405,23 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                 />
               </div>
             </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* PLAY QUEUE */}
+        <AccordionItem value="queue">
+          <AccordionTrigger>PLAY QUEUE</AccordionTrigger>
+          <AccordionContent>
+            <PlayQueue
+              queue={queue}
+              currentlyPlaying={currentlyPlaying}
+              sourceMode={sourceMode}
+              onAddToQueue={onAddToQueue}
+              onRemoveFromQueue={onRemoveFromQueue}
+              onMoveUp={onMoveUp}
+              onMoveDown={onMoveDown}
+              onPlayNext={onPlayNext}
+            />
           </AccordionContent>
         </AccordionItem>
 
