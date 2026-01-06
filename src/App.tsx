@@ -292,28 +292,8 @@ function App() {
       >
         <div className="w-full flex-1 overflow-y-auto">
           <div className="relative">
-            {/* Desktop Collapse Toggle - Inside Sidebar */}
-            <button
-              onClick={() => setIsSidebarOpen(false)}
-              className="hidden md:flex absolute top-4 right-4 p-1 text-gray-400 hover:text-white"
-              title="Collapse Sidebar"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <polyline points="15 18 9 12 15 6"></polyline>
-              </svg>
-            </button>
-
             <ControlPanel
+              onCollapse={() => setIsSidebarOpen(false)}
               sourceMode={sourceMode}
               onModeChange={handleModeChange}
               onFileSelect={handleFileSelect}

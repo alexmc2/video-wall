@@ -40,8 +40,8 @@ export const useYouTubeSync = ({
       // We can't set playbackRate arbitrarily float (like 1.02), only discrete [0.25, 0.5, 1, 1.5, 2] usually.
       // So we mainly rely on seeking for drifting.
 
-      const THRESHOLD = 0.5; // 500ms tolerance
-      const HARD_THRESHOLD = 2.0;
+      const THRESHOLD = 0.25; // 250ms tolerance - tightened from 500ms
+      const HARD_THRESHOLD = 1.0;
 
       if (Math.abs(drift) > HARD_THRESHOLD) {
         // Hard snap
@@ -63,8 +63,8 @@ export const useYouTubeSync = ({
 
     // Polling interval.
     // RequestAnimationFrame is too fast for YouTube API calls (they are async/bridged).
-    // 200ms - 500ms is usually safe.
-    intervalRef.current = window.setInterval(performSyncCheck, 250);
+    // 100ms provides tighter loop for detection.
+    intervalRef.current = window.setInterval(performSyncCheck, 100);
 
     return () => clearInterval(intervalRef.current);
   }, [isPlaying, isSyncEnabled, performSyncCheck]);

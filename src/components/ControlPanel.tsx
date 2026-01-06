@@ -20,7 +20,9 @@ export interface GridConfig {
 interface ControlPanelProps {
   // Mode Change
   sourceMode: SourceMode;
+
   onModeChange: (mode: SourceMode) => void;
+  onCollapse?: () => void;
 
   // Local Props
   onFileSelect: (file: File) => void;
@@ -86,6 +88,7 @@ interface SavedPreset {
 export const ControlPanel: React.FC<ControlPanelProps> = ({
   sourceMode,
   onModeChange,
+  onCollapse,
   onFileSelect,
   onVideoIdChange,
   isSyncActive,
@@ -198,8 +201,31 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
 
   return (
     <div className="p-6 flex flex-col gap-6">
-      <div className="flex justify-between items-center border-b border-border-color pb-4">
-        <h2 className="m-0 text-xl font-bold text-white">Control Deck</h2>
+      <div className="sticky top-0 z-50 bg-[#121827] -mx-6 -mt-6 px-6 py-4 flex justify-between items-center border-b border-border-color shadow-sm">
+        <h2 className="m-0 text-xl font-bold text-white tracking-wider">
+          SYNCHRONISER
+        </h2>
+        {onCollapse && (
+          <button
+            onClick={onCollapse}
+            className="p-1 text-gray-400 hover:text-white transition-colors"
+            title="Collapse Sidebar"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+        )}
       </div>
 
       <Accordion
@@ -520,7 +546,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               {/* VIDEO CROPPING / SCALING */}
               <div className="flex flex-col gap-2 mt-2 pt-2 border-t border-white/10">
                 <label className="text-xs uppercase tracking-wider text-text-dim font-semibold">
-                  Video Adjustment (Corp/Scale)
+                  Video Adjustment (Crop/Scale)
                 </label>
 
                 <div className="flex flex-col gap-1">
